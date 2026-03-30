@@ -1,0 +1,10 @@
+# Skills Directory
+
+This directory contains Claude AI skills for specialized tasks.
+
+## Adding Skills
+
+Create a subdirectory with:
+- `skill.md` - Skill definition and instructions
+- `data/` - Any supporting data files
+- `scripts/` - Helper scripts

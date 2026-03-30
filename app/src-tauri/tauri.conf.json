@@ -1,0 +1,42 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nicedoc/schema/master/tauri.conf.json",
+  "productName": "Self Growth",
+  "version": "0.1.0",
+  "identifier": "com.bemindlabs.growth.v2",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1421",
+    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "pnpm build"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [
+      {
+        "title": "Self Growth",
+        "width": 1024,
+        "height": 768,
+        "minWidth": 375,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico",
+      "icons/icon.png"
+    ],
+    "resources": []
+  }
+}

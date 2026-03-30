@@ -1,0 +1,30 @@
+[package]
+name = "bemind-growth"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "bemind_growth_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.34", features = ["bundled"] }
+sha2 = "0.10"
+hex = "0.4"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+quick-xml = "0.37"
+chrono = "0.4"
+tauri-plugin-dialog = "2.6.0"
+
+[target.'cfg(not(any(target_os = "ios", target_os = "android")))'.dependencies]
+fastembed = "4"
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]

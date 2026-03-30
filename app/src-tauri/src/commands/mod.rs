@@ -1,0 +1,17 @@
+pub mod ai;
+pub mod backup;
+pub mod checkups;
+pub mod goals;
+pub mod habits;
+pub mod health;
+pub mod journal;
+pub mod ledger;
+pub mod ocr;
+pub mod learning;
+pub mod progress;
+pub mod rag;
+pub mod routines;
+pub mod settings;
+pub mod skills;
+pub mod story;
+pub mod todos;
