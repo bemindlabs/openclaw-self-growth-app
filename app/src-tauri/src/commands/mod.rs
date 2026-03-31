@@ -1,5 +1,6 @@
 pub mod ai;
 pub mod backup;
+pub mod chat;
 pub mod checkups;
 pub mod goals;
 pub mod habits;

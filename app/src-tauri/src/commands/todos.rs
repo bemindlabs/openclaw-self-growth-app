@@ -82,6 +82,7 @@ pub fn create_todo(state: State<DbState>, data: CreateTodo) -> Result<Todo, Stri
 }
 
 #[tauri::command]
+#[allow(clippy::too_many_arguments)]
 pub fn update_todo(
     state: State<DbState>,
     id: i64,

@@ -18,6 +18,7 @@ impl EmbedderState {
         Ok(embeddings.into_iter().next().unwrap_or_default())
     }
 
+    #[allow(dead_code)]
     pub fn embed_batch(&self, texts: Vec<String>) -> Result<Vec<Vec<f32>>, Box<dyn std::error::Error>> {
         let embeddings = self.0.embed(texts, None)?;
         Ok(embeddings)

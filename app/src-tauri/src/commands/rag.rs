@@ -1,6 +1,5 @@
 use tauri::State;
 use crate::db::DbState;
-use crate::gateway;
 use crate::models::SearchResult;
 
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
@@ -163,6 +162,7 @@ const EMBED_QUERIES: &[(&str, &str)] = &[
     ("health_checkups", "SELECT id, title || ' (' || checkup_date || ') [' || category || '] ' || results || ' ' || COALESCE(notes, '') FROM health_checkups ORDER BY checkup_date DESC"),
 ];
 
+#[allow(dead_code)]
 fn collect_all_items(conn: &rusqlite::Connection) -> Result<Vec<(String, i64, String)>, String> {
     let mut items = Vec::new();
     for (table, sql) in EMBED_QUERIES {

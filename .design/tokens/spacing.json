@@ -1,0 +1,28 @@
+{
+  "$description": "Spacing tokens derived from Tailwind's default scale. Documents the spacing values actively used across the app.",
+  "scale": {
+    "0.5": { "value": "0.125rem", "px": 2, "usage": "Tight icon gaps" },
+    "1": { "value": "0.25rem", "px": 4, "usage": "Minimal padding, inline gaps" },
+    "1.5": { "value": "0.375rem", "px": 6, "usage": "Small icon spacing" },
+    "2": { "value": "0.5rem", "px": 8, "usage": "Compact padding, small gaps" },
+    "2.5": { "value": "0.625rem", "px": 10, "usage": "Button vertical padding" },
+    "3": { "value": "0.75rem", "px": 12, "usage": "Input padding, card inner spacing" },
+    "3.5": { "value": "0.875rem", "px": 14, "usage": "Message bubble padding" },
+    "4": { "value": "1rem", "px": 16, "usage": "Standard section padding, gaps" },
+    "6": { "value": "1.5rem", "px": 24, "usage": "Desktop page padding" },
+    "8": { "value": "2rem", "px": 32, "usage": "Large section spacing" }
+  },
+  "radius": {
+    "sm": { "value": "0.375rem", "px": 6, "usage": "Small buttons, tags, badges" },
+    "md": { "value": "0.5rem", "px": 8, "usage": "Cards, inputs, standard containers" },
+    "lg": { "value": "0.75rem", "px": 12, "usage": "Modals, large panels, chat bubbles" },
+    "full": { "value": "9999px", "usage": "Avatars, circular icons, pills" }
+  },
+  "layout": {
+    "sidebarWidth": { "value": "16rem", "px": 256, "usage": "Chat history sidebar, navigation sidebar" },
+    "maxContentWidth": { "value": "80%", "usage": "Chat message max-width" },
+    "iconSizeSmall": { "value": "0.875rem", "px": 14, "usage": "Inline icons, sidebar icons" },
+    "iconSizeMedium": { "value": "1.25rem", "px": 20, "usage": "Header icons, action buttons" },
+    "avatarSize": { "value": "1.75rem", "px": 28, "usage": "Chat avatars, user/bot icons" }
+  }
+}

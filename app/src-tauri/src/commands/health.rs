@@ -209,7 +209,6 @@ pub async fn import_apple_health(
 type BatchRow = (String, String, f64, String, Option<String>, Option<String>);
 
 #[allow(clippy::type_complexity)]
-
 fn flush_batch(
     state: &State<DbState>,
     batch: &[BatchRow],

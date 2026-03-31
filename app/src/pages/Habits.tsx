@@ -157,7 +157,8 @@ export default function Habits() {
                     )}
                     <button
                       onClick={() => handleDelete(habit.id)}
-                      className="p-1.5 text-destructive hover:bg-secondary rounded-md"
+                      className="p-1.5 text-destructive hover:bg-secondary rounded-md transition-colors"
+                      aria-label={`Delete: ${habit.name}`}
                     >
                       <Trash2 size={14} />
                     </button>

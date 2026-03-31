@@ -58,6 +58,7 @@ pub fn create_health_checkup(state: State<DbState>, data: CreateHealthCheckup) -
 }
 
 #[tauri::command]
+#[allow(clippy::too_many_arguments)]
 pub fn update_health_checkup(
     state: State<DbState>,
     id: i64,

@@ -120,6 +120,13 @@ pub fn run() {
             commands::checkups::create_health_checkup,
             commands::checkups::update_health_checkup,
             commands::checkups::delete_health_checkup,
+            // Chat Conversations
+            commands::chat::list_conversations,
+            commands::chat::create_conversation,
+            commands::chat::rename_conversation,
+            commands::chat::delete_conversation,
+            commands::chat::get_conversation_messages,
+            commands::chat::save_chat_message,
             // Backup
             commands::backup::export_backup,
             commands::backup::import_backup,

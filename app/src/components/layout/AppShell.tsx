@@ -16,9 +16,11 @@ import {
   Wallet,
   ListTodo,
   ClipboardList,
+  MoreHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "../ui/Logo";
+import { useState } from "react";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -39,7 +41,12 @@ const navItems = [
   { to: "/get-started", icon: HelpCircle, label: "Get Started" },
 ];
 
+const mobileNavItems = navItems.slice(0, 5);
+const mobileOverflowItems = navItems.slice(5);
+
 export default function AppShell() {
+  const [moreOpen, setMoreOpen] = useState(false);
+
   return (
     <div className="flex h-screen">
       {/* Desktop Sidebar */}
@@ -48,7 +55,7 @@ export default function AppShell() {
           <Logo />
           <p className="text-[10px] text-muted-foreground mt-1 px-1">Self Development Platform</p>
         </div>
-        <nav className="flex-1 p-2 space-y-1">
+        <nav className="flex-1 overflow-y-auto p-2 space-y-1">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -83,19 +90,16 @@ export default function AppShell() {
       </main>
 
       {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border safe-area-bottom">
-        <p className="text-[9px] text-muted-foreground text-center pt-1">
-          Powered by Bemind Technology Co.,Ltd. (Bemindlabs) &middot; v0.1.0
-        </p>
-        <div className="flex justify-around py-1.5">
-          {navItems.map((item) => (
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border safe-area-bottom z-40">
+        <div className="flex justify-around py-1.5 relative">
+          {mobileNavItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.to === "/"}
               className={({ isActive }) =>
                 cn(
-                  "flex flex-col items-center gap-0.5 px-2 py-1 text-xs transition-colors",
+                  "flex flex-col items-center gap-0.5 px-2 py-1 text-[10px] transition-colors",
                   isActive ? "text-primary" : "text-muted-foreground"
                 )
               }
@@ -104,7 +108,51 @@ export default function AppShell() {
               <span>{item.label}</span>
             </NavLink>
           ))}
+          {/* More menu */}
+          <button
+            onClick={() => setMoreOpen(!moreOpen)}
+            className={cn(
+              "flex flex-col items-center gap-0.5 px-2 py-1 text-[10px] transition-colors",
+              moreOpen ? "text-primary" : "text-muted-foreground"
+            )}
+            aria-label="More navigation items"
+          >
+            <MoreHorizontal size={20} />
+            <span>More</span>
+          </button>
         </div>
+
+        {/* Overflow menu */}
+        {moreOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-30"
+              onClick={() => setMoreOpen(false)}
+            />
+            <div className="absolute bottom-full left-0 right-0 bg-card border-t border-border shadow-lg z-40 max-h-[60vh] overflow-y-auto">
+              <div className="grid grid-cols-4 gap-1 p-3">
+                {mobileOverflowItems.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setMoreOpen(false)}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex flex-col items-center gap-1 p-2 rounded-md text-[10px] transition-colors",
+                        isActive
+                          ? "text-primary bg-primary/10"
+                          : "text-muted-foreground hover:bg-secondary"
+                      )
+                    }
+                  >
+                    <item.icon size={20} />
+                    <span>{item.label}</span>
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </nav>
     </div>
   );

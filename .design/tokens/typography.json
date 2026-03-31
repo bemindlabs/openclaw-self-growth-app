@@ -1,0 +1,31 @@
+{
+  "$description": "Typography tokens for BeMind Self Growth. Font stack applied globally in globals.css body rule.",
+  "fontFamily": {
+    "system": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    "mono": "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace"
+  },
+  "fontSize": {
+    "xs": { "value": "0.6875rem", "px": 11, "usage": "Captions, sub-labels, metadata" },
+    "sm": { "value": "0.875rem", "px": 14, "usage": "Body text, form inputs, messages" },
+    "base": { "value": "1rem", "px": 16, "usage": "Default body, card titles" },
+    "lg": { "value": "1.125rem", "px": 18, "usage": "Section headings, page subtitles" },
+    "xl": { "value": "1.25rem", "px": 20, "usage": "Page titles" },
+    "2xl": { "value": "1.5rem", "px": 24, "usage": "Dashboard stats, hero numbers" },
+    "3xl": { "value": "1.875rem", "px": 30, "usage": "Large display numbers" }
+  },
+  "fontWeight": {
+    "normal": { "value": 400, "usage": "Body text, descriptions" },
+    "medium": { "value": 500, "usage": "Labels, nav items" },
+    "semibold": { "value": 600, "usage": "Card titles, section headings" },
+    "bold": { "value": 700, "usage": "Page titles, stat values, emphasis" }
+  },
+  "lineHeight": {
+    "tight": { "value": 1.25, "usage": "Headings, compact labels" },
+    "normal": { "value": 1.5, "usage": "Body text, descriptions" },
+    "relaxed": { "value": 1.625, "usage": "Chat messages, long-form content" }
+  },
+  "letterSpacing": {
+    "tight": { "value": "-0.025em", "usage": "Logo, large headings" },
+    "wider": { "value": "0.05em", "usage": "Uppercase labels, sidebar section headers" }
+  }
+}

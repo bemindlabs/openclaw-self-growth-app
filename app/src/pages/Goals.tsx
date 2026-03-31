@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { goalsApi, type Goal } from "@/api/goals";
 import { Plus, Trash2, Trophy } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const statusColors: Record<string, string> = {
   active: "bg-primary/10 text-primary",
@@ -52,7 +53,7 @@ export default function Goals() {
         <h2 className="text-2xl font-bold">Goals</h2>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90"
+          className="flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90 transition-opacity"
         >
           <Plus size={16} />
           Add Goal
@@ -64,9 +65,12 @@ export default function Goals() {
           <button
             key={s ?? "all"}
             onClick={() => setFilter(s)}
-            className={`px-3 py-1 rounded-full text-xs ${
-              filter === s ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
-            }`}
+            className={cn(
+              "px-3 py-1 rounded-full text-xs transition-colors",
+              filter === s
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            )}
           >
             {s ?? "All"}
           </button>
@@ -75,31 +79,40 @@ export default function Goals() {
 
       {showForm && (
         <div className="bg-card border border-border rounded-lg p-4 mb-4 space-y-3">
-          <input
-            type="text"
-            placeholder="Goal title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
-          />
-          <textarea
-            placeholder="Description (optional)"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
-            rows={2}
-          />
-          <input
-            type="date"
-            value={targetDate}
-            onChange={(e) => setTargetDate(e.target.value)}
-            className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
-          />
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">Title</label>
+            <input
+              type="text"
+              placeholder="Goal title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">Description</label>
+            <textarea
+              placeholder="Description (optional)"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+              rows={2}
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">Target Date</label>
+            <input
+              type="date"
+              value={targetDate}
+              onChange={(e) => setTargetDate(e.target.value)}
+              className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
           <div className="flex gap-2">
-            <button onClick={handleCreate} className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm">
+            <button onClick={handleCreate} className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90 transition-opacity">
               Create
             </button>
-            <button onClick={() => setShowForm(false)} className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm">
+            <button onClick={() => setShowForm(false)} className="px-4 py-2 border border-border rounded-md text-sm hover:bg-secondary transition-colors">
               Cancel
             </button>
           </div>
@@ -107,7 +120,10 @@ export default function Goals() {
       )}
 
       {goals.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No goals yet.</p>
+        <div className="text-center py-12 text-muted-foreground">
+          <Trophy size={48} className="mx-auto mb-4 opacity-20" />
+          <p className="text-sm">No goals yet. Add one to get started.</p>
+        </div>
       ) : (
         <div className="space-y-3">
           {goals.map((goal) => (
@@ -124,7 +140,11 @@ export default function Goals() {
                       <select
                         value={goal.status}
                         onChange={(e) => handleStatusChange(goal.id, e.target.value)}
-                        className={`px-2 py-0.5 rounded text-xs border-0 ${statusColors[goal.status] || ""}`}
+                        className={cn(
+                          "px-2 py-0.5 rounded text-xs border-0",
+                          statusColors[goal.status] || ""
+                        )}
+                        aria-label={`Status for: ${goal.title}`}
                       >
                         <option value="active">Active</option>
                         <option value="completed">Completed</option>
@@ -138,7 +158,8 @@ export default function Goals() {
                 </div>
                 <button
                   onClick={() => handleDelete(goal.id)}
-                  className="p-2 text-destructive hover:bg-secondary rounded-md"
+                  className="p-2 text-destructive hover:bg-secondary rounded-md transition-colors"
+                  aria-label={`Delete: ${goal.title}`}
                 >
                   <Trash2 size={16} />
                 </button>

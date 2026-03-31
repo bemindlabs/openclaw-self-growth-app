@@ -1,0 +1,20 @@
+{
+  "$description": "Responsive breakpoints. Matches Tailwind defaults. The app uses md: as the primary desktop/mobile boundary.",
+  "sm": {
+    "value": "640px",
+    "usage": "Small tablets (not actively used)"
+  },
+  "md": {
+    "value": "768px",
+    "usage": "Primary breakpoint — switches between mobile bottom nav and desktop sidebar layout"
+  },
+  "lg": {
+    "value": "1024px",
+    "usage": "Large screens (not actively used)"
+  },
+  "xl": {
+    "value": "1280px",
+    "usage": "Extra large screens (not actively used)"
+  },
+  "note": "The Tauri desktop app targets md+ by default. Mobile layout (bottom nav) activates below md breakpoint for potential future mobile/tablet builds."
+}

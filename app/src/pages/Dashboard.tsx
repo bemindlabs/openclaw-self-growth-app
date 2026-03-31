@@ -21,6 +21,7 @@ import {
   TrendingDown,
   Minus,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import Markdown from "@/components/ui/Markdown";
 
 const trendIcons: Record<string, typeof TrendingUp> = {
@@ -51,10 +52,10 @@ function formatDate(date: string | null): string {
 }
 
 const priorityColors: Record<string, string> = {
-  urgent: "text-red-600",
-  high: "text-orange-600",
-  medium: "text-blue-600",
-  low: "text-gray-500",
+  urgent: "text-destructive",
+  high: "text-warning",
+  medium: "text-info",
+  low: "text-muted-foreground",
 };
 
 export default function Dashboard() {
@@ -184,12 +185,12 @@ export default function Dashboard() {
   );
 
   const cards = [
-    { label: "Streak", value: `${stats.current_streak}d`, icon: Flame, color: "text-orange-500" },
+    { label: "Streak", value: `${stats.current_streak}d`, icon: Flame, color: "text-warning" },
     { label: "Today", value: stats.completions_today, icon: CheckCircle, color: "text-success" },
     { label: "Goals", value: stats.active_goals, icon: Trophy, color: "text-warning" },
-    { label: "Todos", value: todayTodos.length, icon: ListTodo, color: "text-violet-500" },
+    { label: "Todos", value: todayTodos.length, icon: ListTodo, color: "text-accent" },
     { label: "Routines", value: stats.active_routines, icon: RotateCcw, color: "text-primary" },
-    { label: "Skills", value: stats.total_skills, icon: Target, color: "text-blue-500" },
+    { label: "Skills", value: stats.total_skills, icon: Target, color: "text-info" },
   ];
 
   // Pick top health highlights (max 4)
@@ -206,7 +207,7 @@ export default function Dashboard() {
             key={card.label}
             className="bg-card rounded-lg border border-border p-3 flex items-center gap-2"
           >
-            <div className={`p-1.5 rounded-md bg-secondary ${card.color}`}>
+            <div className={cn("p-1.5 rounded-md bg-secondary", card.color)}>
               <card.icon size={16} />
             </div>
             <div>
@@ -222,10 +223,10 @@ export default function Dashboard() {
         {/* Today's Todos */}
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-3">
-            <ListTodo size={16} className="text-violet-500" />
+            <ListTodo size={16} className="text-accent" />
             <h3 className="font-semibold text-sm">Today's Todos</h3>
             {overdueTodos.length > 0 && (
-              <span className="ml-auto flex items-center gap-1 text-xs text-red-600">
+              <span className="ml-auto flex items-center gap-1 text-xs text-destructive">
                 <AlertCircle size={12} />
                 {overdueTodos.length} overdue
               </span>
@@ -243,20 +244,22 @@ export default function Dashboard() {
                     <button
                       onClick={() => handleCompleteTodo(todo.id)}
                       className="w-4 h-4 rounded border border-muted-foreground/40 hover:border-primary hover:bg-primary/10 flex items-center justify-center flex-shrink-0 transition-colors"
+                      aria-label={`Complete: ${todo.title}`}
                     >
                       <Check size={10} className="opacity-0 group-hover:opacity-100 text-primary" />
                     </button>
                     <span className="text-sm flex-1 truncate">{todo.title}</span>
                     {todo.due_date && (
                       <span
-                        className={`text-[10px] flex-shrink-0 ${
-                          overdue ? "text-red-600" : "text-muted-foreground"
-                        }`}
+                        className={cn(
+                          "text-[10px] flex-shrink-0",
+                          overdue ? "text-destructive" : "text-muted-foreground"
+                        )}
                       >
                         {formatDate(todo.due_date)}
                       </span>
                     )}
-                    <span className={`text-[10px] ${priorityColors[todo.priority] || ""}`}>
+                    <span className={cn("text-[10px]", priorityColors[todo.priority] || "")}>
                       {todo.priority === "urgent" || todo.priority === "high" ? "!" : ""}
                     </span>
                   </div>
@@ -278,7 +281,7 @@ export default function Dashboard() {
         {/* Today's Habits */}
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-3">
-            <CheckCircle size={16} className="text-green-500" />
+            <CheckCircle size={16} className="text-success" />
             <h3 className="font-semibold text-sm">Today's Habits</h3>
             {habits.length > 0 && (
               <span className="ml-auto text-xs text-muted-foreground">
@@ -294,18 +297,21 @@ export default function Dashboard() {
                   <div key={habit.id} className="flex items-center gap-2">
                     <button
                       onClick={() => handleToggleHabit(habit.id)}
-                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                      className={cn(
+                        "w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors",
                         done
-                          ? "border-green-500 bg-green-500"
-                          : "border-muted-foreground/40 hover:border-green-500"
-                      }`}
+                          ? "border-success bg-success"
+                          : "border-muted-foreground/40 hover:border-success"
+                      )}
+                      aria-label={`${done ? "Uncheck" : "Check"}: ${habit.name}`}
                     >
                       {done && <Check size={10} className="text-white" />}
                     </button>
                     <span
-                      className={`text-sm flex-1 truncate ${
-                        done ? "line-through text-muted-foreground" : ""
-                      }`}
+                      className={cn(
+                        "text-sm flex-1 truncate",
+                        done && "line-through text-muted-foreground"
+                      )}
                     >
                       {habit.name}
                     </span>
@@ -325,7 +331,7 @@ export default function Dashboard() {
       {healthHighlights.length > 0 && (
         <div className="mt-4 bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-3">
-            <Heart size={16} className="text-red-500" />
+            <Heart size={16} className="text-destructive" />
             <h3 className="font-semibold text-sm">Health Snapshot</h3>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -368,7 +374,7 @@ export default function Dashboard() {
             onChange={(e) => setCoachQuestion(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAskCoach()}
             placeholder="Ask your coach anything..."
-            className="flex-1 bg-secondary text-sm rounded-md border border-border px-3 py-2 placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            className="flex-1 bg-secondary text-sm rounded-md border border-border px-3 py-2 placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
           />
           <button
             onClick={handleAskCoach}

@@ -1,18 +1,96 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { aiApi, type ChatMessage } from "@/api/ai";
-import { Send, Bot, User, Trash2 } from "lucide-react";
+import { chatApi, type ChatConversation } from "@/api/chat";
+import { Send, Bot, User, Trash2, Plus, MessageSquare, PanelLeftClose, PanelLeft, Pencil, Check, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import Markdown from "@/components/ui/Markdown";
 
 export default function ChatPage() {
+  const [conversations, setConversations] = useState<ChatConversation[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const loadConversations = useCallback(async () => {
+    try {
+      const list = await chatApi.listConversations();
+      setConversations(list);
+    } catch {
+      // silently fail on load
+    }
+  }, []);
+
+  useEffect(() => {
+    loadConversations();
+  }, [loadConversations]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
+
+  const loadMessages = async (conversationId: number) => {
+    try {
+      const records = await chatApi.getMessages(conversationId);
+      setMessages(records.map((r) => ({ role: r.role, content: r.content })));
+      setActiveConversationId(conversationId);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  const handleNewChat = async () => {
+    setActiveConversationId(null);
+    setMessages([]);
+    setError(null);
+  };
+
+  const handleSelectConversation = (conv: ChatConversation) => {
+    if (conv.id === activeConversationId) return;
+    loadMessages(conv.id);
+  };
+
+  const handleDeleteConversation = async (id: number) => {
+    try {
+      await chatApi.deleteConversation(id);
+      if (activeConversationId === id) {
+        setActiveConversationId(null);
+        setMessages([]);
+      }
+      await loadConversations();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  const handleStartRename = (conv: ChatConversation) => {
+    setEditingId(conv.id);
+    setEditTitle(conv.title);
+  };
+
+  const handleConfirmRename = async () => {
+    if (editingId === null || !editTitle.trim()) return;
+    try {
+      await chatApi.renameConversation(editingId, editTitle.trim());
+      await loadConversations();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setEditingId(null);
+      setEditTitle("");
+    }
+  };
+
+  const handleCancelRename = () => {
+    setEditingId(null);
+    setEditTitle("");
+  };
 
   const handleSend = async () => {
     const text = input.trim();
@@ -26,8 +104,28 @@ export default function ChatPage() {
     setError(null);
 
     try {
+      // Create conversation on first message if needed
+      let convId = activeConversationId;
+      if (!convId) {
+        const title = text.length > 40 ? text.slice(0, 40) + "..." : text;
+        const conv = await chatApi.createConversation(title);
+        convId = conv.id;
+        setActiveConversationId(convId);
+      }
+
+      // Save user message
+      await chatApi.saveMessage(convId, "user", text);
+
+      // Get AI response
       const res = await aiApi.chat(updated);
-      setMessages([...updated, { role: "assistant", content: res.content }]);
+      const assistantMessage: ChatMessage = { role: "assistant", content: res.content };
+      setMessages([...updated, assistantMessage]);
+
+      // Save assistant message
+      await chatApi.saveMessage(convId, "assistant", res.content);
+
+      // Refresh sidebar
+      await loadConversations();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -35,117 +133,228 @@ export default function ChatPage() {
     }
   };
 
-  const handleClear = () => {
-    setMessages([]);
-    setError(null);
+  const handleClear = async () => {
+    if (activeConversationId) {
+      await handleDeleteConversation(activeConversationId);
+    } else {
+      setMessages([]);
+      setError(null);
+    }
   };
 
   return (
-    <div className="flex flex-col h-full -m-4 md:-m-6">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
-        <div className="flex items-center gap-2">
-          <Bot size={20} className="text-primary" />
-          <div>
-            <h2 className="text-base font-semibold">Chat with AI</h2>
-            <p className="text-[11px] text-muted-foreground">Powered by BemindAI</p>
+    <div className="flex h-full -m-4 md:-m-6">
+      {/* Sidebar */}
+      {sidebarOpen && (
+        <div className="w-64 flex-shrink-0 border-r border-border bg-card flex flex-col">
+          <div className="flex items-center justify-between px-3 py-3 border-b border-border">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">History</span>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleNewChat}
+                className="p-1 rounded hover:bg-secondary transition-colors"
+                title="New chat"
+              >
+                <Plus size={16} className="text-muted-foreground" />
+              </button>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="p-1 rounded hover:bg-secondary transition-colors"
+                title="Close sidebar"
+              >
+                <PanelLeftClose size={16} className="text-muted-foreground" />
+              </button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+            {conversations.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-6">No conversations yet</p>
+            ) : (
+              conversations.map((conv) => (
+                <div
+                  key={conv.id}
+                  className={cn(
+                    "group flex items-center gap-2 px-3 py-2 cursor-pointer border-b border-border/50 transition-colors",
+                    conv.id === activeConversationId
+                      ? "bg-primary/10 text-primary"
+                      : "hover:bg-secondary/50"
+                  )}
+                  onClick={() => handleSelectConversation(conv)}
+                >
+                  <MessageSquare size={14} className="flex-shrink-0 opacity-50" />
+                  {editingId === conv.id ? (
+                    <div className="flex-1 flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="text"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleConfirmRename();
+                          if (e.key === "Escape") handleCancelRename();
+                        }}
+                        className="flex-1 text-xs bg-secondary border border-border rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-primary"
+                        autoFocus
+                      />
+                      <button onClick={handleConfirmRename} className="p-0.5 hover:text-primary" aria-label="Confirm rename">
+                        <Check size={12} />
+                      </button>
+                      <button onClick={handleCancelRename} className="p-0.5 hover:text-destructive" aria-label="Cancel rename">
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="flex-1 text-xs truncate">{conv.title}</span>
+                      <div className="hidden group-hover:flex items-center gap-0.5">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStartRename(conv);
+                          }}
+                          className="p-0.5 rounded hover:bg-secondary"
+                          title="Rename"
+                        >
+                          <Pencil size={11} className="text-muted-foreground" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteConversation(conv.id);
+                          }}
+                          className="p-0.5 rounded hover:bg-destructive/10"
+                          title="Delete"
+                        >
+                          <Trash2 size={11} className="text-destructive" />
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
-        {messages.length > 0 && (
-          <button
-            onClick={handleClear}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
-          >
-            <Trash2 size={14} />
-            Clear
-          </button>
-        )}
-      </div>
+      )}
 
-      {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {messages.length === 0 && !loading && (
-          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-            <Bot size={48} className="mb-4 opacity-20" />
-            <p className="text-sm font-medium">Start a conversation</p>
-            <p className="text-xs mt-1 max-w-xs">
-              Ask about your routines, skills, learning goals, or get personalized development advice.
-            </p>
-          </div>
-        )}
-
-        {messages.map((msg, i) => (
-          <div
-            key={i}
-            className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-          >
-            {msg.role === "assistant" && (
-              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Bot size={14} className="text-primary" />
-              </div>
+      {/* Main Chat Area */}
+      <div className="flex flex-col flex-1 min-w-0">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
+          <div className="flex items-center gap-2">
+            {!sidebarOpen && (
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="p-1 rounded hover:bg-secondary transition-colors mr-1"
+                title="Open sidebar"
+              >
+                <PanelLeft size={18} className="text-muted-foreground" />
+              </button>
             )}
-            <div
-              className={`max-w-[80%] rounded-lg px-3.5 py-2.5 text-sm leading-relaxed ${
-                msg.role === "user"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card border border-border"
-              }`}
+            <Bot size={20} className="text-primary" />
+            <div>
+              <h2 className="text-base font-semibold">Chat with AI</h2>
+              <p className="text-[11px] text-muted-foreground">Powered by BemindAI</p>
+            </div>
+          </div>
+          {messages.length > 0 && (
+            <button
+              onClick={handleClear}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
             >
-              {msg.role === "assistant" ? (
-                <Markdown>{msg.content}</Markdown>
-              ) : (
-                <p className="whitespace-pre-wrap">{msg.content}</p>
+              <Trash2 size={14} />
+              Clear
+            </button>
+          )}
+        </div>
+
+        {/* Messages */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+          {messages.length === 0 && !loading && (
+            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+              <Bot size={48} className="mb-4 opacity-20" />
+              <p className="text-sm font-medium">Start a conversation</p>
+              <p className="text-xs mt-1 max-w-xs">
+                Ask about your routines, skills, learning goals, or get personalized development advice.
+              </p>
+            </div>
+          )}
+
+          {messages.map((msg, i) => (
+            <div
+              key={i}
+              className={cn("flex gap-3", msg.role === "user" ? "justify-end" : "justify-start")}
+            >
+              {msg.role === "assistant" && (
+                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Bot size={14} className="text-primary" />
+                </div>
+              )}
+              <div
+                className={cn(
+                  "max-w-[80%] rounded-lg px-3.5 py-2.5 text-sm leading-relaxed",
+                  msg.role === "user"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card border border-border"
+                )}
+              >
+                {msg.role === "assistant" ? (
+                  <Markdown>{msg.content}</Markdown>
+                ) : (
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                )}
+              </div>
+              {msg.role === "user" && (
+                <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <User size={14} className="text-muted-foreground" />
+                </div>
               )}
             </div>
-            {msg.role === "user" && (
-              <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 mt-0.5">
-                <User size={14} className="text-muted-foreground" />
-              </div>
-            )}
-          </div>
-        ))}
+          ))}
 
-        {loading && (
-          <div className="flex gap-3">
-            <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Bot size={14} className="text-primary" />
-            </div>
-            <div className="bg-card border border-border rounded-lg px-3.5 py-2.5">
-              <div className="flex gap-1">
-                <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+          {loading && (
+            <div className="flex gap-3">
+              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Bot size={14} className="text-primary" />
+              </div>
+              <div className="bg-card border border-border rounded-lg px-3.5 py-2.5">
+                <div className="flex gap-1">
+                  <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {error && (
-          <div className="rounded-md bg-destructive/10 border border-destructive/30 px-3 py-2 text-sm text-destructive">
-            {error}
-          </div>
-        )}
-      </div>
+          {error && (
+            <div className="rounded-md bg-destructive/10 border border-destructive/30 px-3 py-2 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+        </div>
 
-      {/* Input */}
-      <div className="border-t border-border bg-card px-4 py-3">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-            placeholder="Type a message..."
-            disabled={loading}
-            className="flex-1 bg-secondary text-sm rounded-md border border-border px-3 py-2.5 placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
-          />
-          <button
-            onClick={handleSend}
-            disabled={loading || !input.trim()}
-            className="bg-primary text-primary-foreground rounded-md px-3 py-2.5 disabled:opacity-50 hover:opacity-90 transition-opacity"
-          >
-            <Send size={16} />
-          </button>
+        {/* Input */}
+        <div className="border-t border-border bg-card px-4 py-3">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+              placeholder="Type a message..."
+              disabled={loading}
+              className="flex-1 bg-secondary text-sm rounded-md border border-border px-3 py-2.5 placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
+            />
+            <button
+              onClick={handleSend}
+              disabled={loading || !input.trim()}
+              className="bg-primary text-primary-foreground rounded-md px-3 py-2.5 disabled:opacity-50 hover:opacity-90 transition-opacity"
+              aria-label="Send message"
+            >
+              <Send size={16} />
+            </button>
+          </div>
         </div>
       </div>
     </div>

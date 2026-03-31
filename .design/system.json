@@ -1,0 +1,19 @@
+{
+  "name": "BeMind Self Growth",
+  "version": "1.0.0",
+  "description": "Design system for the BeMind Self Growth personal development app",
+  "platform": "desktop (Tauri) + responsive web",
+  "framework": "React 19 + Tailwind CSS v4",
+  "tokenFormat": "css-variables",
+  "tokenSource": "app/src/styles/globals.css",
+  "tokens": {
+    "colors": "tokens/colors.json",
+    "typography": "tokens/typography.json",
+    "spacing": "tokens/spacing.json",
+    "shadows": "tokens/shadows.json",
+    "breakpoints": "tokens/breakpoints.json"
+  },
+  "components": "components/",
+  "patterns": "patterns/",
+  "guidelines": "guidelines/"
+}

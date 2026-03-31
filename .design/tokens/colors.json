@@ -1,0 +1,53 @@
+{
+  "$description": "BeMind Self Growth color tokens. Source of truth: app/src/styles/globals.css @theme block.",
+  "primary": {
+    "value": "#6366f1",
+    "description": "Indigo — primary brand, active states, CTA buttons",
+    "foreground": "#ffffff"
+  },
+  "secondary": {
+    "value": "#f1f5f9",
+    "description": "Slate light — secondary backgrounds, hover states",
+    "foreground": "#0f172a"
+  },
+  "accent": {
+    "value": "#8b5cf6",
+    "description": "Violet — brand secondary emphasis, highlights",
+    "foreground": "#ffffff"
+  },
+  "destructive": {
+    "value": "#ef4444",
+    "description": "Red — errors, dangerous actions, delete",
+    "foreground": "#ffffff"
+  },
+  "muted": {
+    "value": "#f1f5f9",
+    "description": "Slate light — muted backgrounds, disabled states",
+    "foreground": "#64748b"
+  },
+  "card": {
+    "value": "#ffffff",
+    "description": "White — card and panel backgrounds",
+    "foreground": "#0f172a"
+  },
+  "border": {
+    "value": "#e2e8f0",
+    "description": "Slate lighter — borders, dividers, separators"
+  },
+  "background": {
+    "value": "#f8fafc",
+    "description": "Slate lightest — page background"
+  },
+  "foreground": {
+    "value": "#0f172a",
+    "description": "Slate dark — primary text color"
+  },
+  "success": {
+    "value": "#22c55e",
+    "description": "Green — positive states, completion, progress"
+  },
+  "warning": {
+    "value": "#f59e0b",
+    "description": "Amber — alerts, cautions, attention needed"
+  }
+}

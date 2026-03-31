@@ -69,6 +69,7 @@ pub fn create_ledger_entry(state: State<DbState>, data: CreateLedgerEntry) -> Re
 }
 
 #[tauri::command]
+#[allow(clippy::too_many_arguments)]
 pub fn update_ledger_entry(
     state: State<DbState>,
     id: i64,

@@ -145,6 +145,7 @@ pub struct SearchResult {
 pub struct GenerateStoryInput {
     pub prompt: Option<String>,
     pub tone: Option<String>,
+    #[allow(dead_code)]
     pub max_tokens: Option<u32>,
 }
 
@@ -166,6 +167,24 @@ pub struct AiResponse {
 pub struct ChatMessageInput {
     pub role: String,
     pub content: String,
+}
+
+// Chat Conversations
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ChatConversation {
+    pub id: i64,
+    pub title: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ChatMessageRecord {
+    pub id: i64,
+    pub conversation_id: i64,
+    pub role: String,
+    pub content: String,
+    pub created_at: String,
 }
 
 // Stories

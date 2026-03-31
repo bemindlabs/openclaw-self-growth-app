@@ -1,0 +1,20 @@
+{
+  "$description": "Shadow tokens. Currently minimal — the app relies on borders rather than shadows for elevation. These are recommended additions.",
+  "none": {
+    "value": "none",
+    "usage": "Default — no shadow"
+  },
+  "sm": {
+    "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+    "usage": "Subtle lift for cards, inputs"
+  },
+  "md": {
+    "value": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+    "usage": "Dropdowns, popovers, floating elements"
+  },
+  "lg": {
+    "value": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+    "usage": "Modals, dialogs"
+  },
+  "note": "The current design uses border-based elevation (border-border) instead of box shadows, keeping the UI flat and clean. Shadows are available for future use if needed."
+}

@@ -11,14 +11,15 @@ import {
   ChevronUp,
   Calendar,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type FilterTab = "all" | "today" | "overdue" | "completed";
 
 const priorityConfig: Record<string, { label: string; color: string; bg: string }> = {
-  urgent: { label: "Urgent", color: "text-red-600", bg: "bg-red-100" },
-  high: { label: "High", color: "text-orange-600", bg: "bg-orange-100" },
-  medium: { label: "Medium", color: "text-blue-600", bg: "bg-blue-100" },
-  low: { label: "Low", color: "text-gray-500", bg: "bg-gray-100" },
+  urgent: { label: "Urgent", color: "text-destructive", bg: "bg-destructive/10" },
+  high: { label: "High", color: "text-warning", bg: "bg-warning/10" },
+  medium: { label: "Medium", color: "text-info", bg: "bg-info/10" },
+  low: { label: "Low", color: "text-muted-foreground", bg: "bg-secondary" },
 };
 
 function isOverdue(todo: Todo): boolean {
@@ -137,7 +138,7 @@ export default function TodosPage() {
         <h2 className="text-2xl font-bold">Todos</h2>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm"
+          className="flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90 transition-opacity"
         >
           <Plus size={16} />
           Add Todo
@@ -162,7 +163,7 @@ export default function TodosPage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-            className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
+            className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
             autoFocus
           />
           <textarea
@@ -170,7 +171,7 @@ export default function TodosPage() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
-            className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background resize-none"
+            className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background resize-none focus:outline-none focus:ring-1 focus:ring-primary"
           />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <div>
@@ -179,7 +180,7 @@ export default function TodosPage() {
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full px-2 py-1.5 border border-border rounded-md text-sm bg-background"
+                className="w-full px-2 py-1.5 border border-border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             <div>
@@ -188,7 +189,7 @@ export default function TodosPage() {
                 type="time"
                 value={dueTime}
                 onChange={(e) => setDueTime(e.target.value)}
-                className="w-full px-2 py-1.5 border border-border rounded-md text-sm bg-background"
+                className="w-full px-2 py-1.5 border border-border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             <div>
@@ -196,7 +197,7 @@ export default function TodosPage() {
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                className="w-full px-2 py-1.5 border border-border rounded-md text-sm bg-background"
+                className="w-full px-2 py-1.5 border border-border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -211,7 +212,7 @@ export default function TodosPage() {
                 placeholder="e.g. work, personal"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-2 py-1.5 border border-border rounded-md text-sm bg-background"
+                className="w-full px-2 py-1.5 border border-border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
           </div>
@@ -219,13 +220,13 @@ export default function TodosPage() {
             <button
               onClick={handleCreate}
               disabled={!title.trim()}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm disabled:opacity-50"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm disabled:opacity-50 hover:opacity-90 transition-opacity"
             >
               Create Todo
             </button>
             <button
               onClick={() => setShowForm(false)}
-              className="px-4 py-2 border border-border rounded-md text-sm"
+              className="px-4 py-2 border border-border rounded-md text-sm hover:bg-secondary transition-colors"
             >
               Cancel
             </button>
@@ -246,11 +247,12 @@ export default function TodosPage() {
           <button
             key={tab.key}
             onClick={() => setFilter(tab.key)}
-            className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
+            className={cn(
+              "px-3 py-1.5 rounded-full text-sm transition-colors",
               filter === tab.key
                 ? "bg-primary text-primary-foreground"
                 : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-            }`}
+            )}
           >
             {tab.label}
           </button>
@@ -266,16 +268,17 @@ export default function TodosPage() {
             return (
               <div
                 key={todo.id}
-                className={`bg-card border rounded-lg p-3 flex items-start gap-3 ${
-                  overdue ? "border-red-300" : "border-border"
-                }`}
+                className={cn(
+                  "bg-card border rounded-lg p-3 flex items-start gap-3",
+                  overdue ? "border-destructive/50" : "border-border"
+                )}
               >
                 {/* Checkbox */}
                 {todo.status !== "completed" ? (
                   <button
                     onClick={() => handleComplete(todo.id)}
                     className="mt-0.5 w-5 h-5 rounded border-2 border-muted-foreground/40 hover:border-primary hover:bg-primary/10 flex items-center justify-center flex-shrink-0 transition-colors"
-                    title="Mark complete"
+                    aria-label={`Complete: ${todo.title}`}
                   >
                     <Check size={12} className="opacity-0 hover:opacity-100 text-primary" />
                   </button>
@@ -289,17 +292,14 @@ export default function TodosPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
-                      className={`font-medium text-sm ${
-                        todo.status === "completed"
-                          ? "line-through text-muted-foreground"
-                          : ""
-                      }`}
+                      className={cn(
+                        "font-medium text-sm",
+                        todo.status === "completed" && "line-through text-muted-foreground"
+                      )}
                     >
                       {todo.title}
                     </span>
-                    <span
-                      className={`text-xs px-1.5 py-0.5 rounded ${pc.bg} ${pc.color}`}
-                    >
+                    <span className={cn("text-xs px-1.5 py-0.5 rounded", pc.bg, pc.color)}>
                       {pc.label}
                     </span>
                     {todo.category && (
@@ -316,9 +316,10 @@ export default function TodosPage() {
                   <div className="flex items-center gap-3 mt-1.5">
                     {todo.due_date && (
                       <span
-                        className={`flex items-center gap-1 text-xs ${
-                          overdue ? "text-red-600 font-medium" : "text-muted-foreground"
-                        }`}
+                        className={cn(
+                          "flex items-center gap-1 text-xs",
+                          overdue ? "text-destructive font-medium" : "text-muted-foreground"
+                        )}
                       >
                         {overdue ? <AlertCircle size={11} /> : <Calendar size={11} />}
                         {formatDate(todo.due_date)}
@@ -342,7 +343,7 @@ export default function TodosPage() {
                 <button
                   onClick={() => handleDelete(todo.id)}
                   className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
-                  title="Delete"
+                  aria-label={`Delete: ${todo.title}`}
                 >
                   <Trash2 size={14} />
                 </button>
@@ -394,6 +395,7 @@ export default function TodosPage() {
                   <button
                     onClick={() => handleDelete(todo.id)}
                     className="text-muted-foreground hover:text-destructive transition-colors"
+                    aria-label={`Delete: ${todo.title}`}
                   >
                     <Trash2 size={14} />
                   </button>

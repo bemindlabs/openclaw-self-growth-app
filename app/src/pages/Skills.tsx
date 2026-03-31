@@ -118,7 +118,8 @@ export default function Skills() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => handleLevelChange(skill.id, skill.current_level, -1)}
-                      className="p-1 hover:bg-secondary rounded"
+                      className="p-1 hover:bg-secondary rounded transition-colors"
+                      aria-label={`Decrease level: ${skill.name}`}
                     >
                       <ChevronDown size={16} />
                     </button>
@@ -127,13 +128,15 @@ export default function Skills() {
                     </span>
                     <button
                       onClick={() => handleLevelChange(skill.id, skill.current_level, 1)}
-                      className="p-1 hover:bg-secondary rounded"
+                      className="p-1 hover:bg-secondary rounded transition-colors"
+                      aria-label={`Increase level: ${skill.name}`}
                     >
                       <ChevronUp size={16} />
                     </button>
                     <button
                       onClick={() => handleDelete(skill.id)}
-                      className="p-1 text-destructive hover:bg-secondary rounded ml-2"
+                      className="p-1 text-destructive hover:bg-secondary rounded ml-2 transition-colors"
+                      aria-label={`Delete: ${skill.name}`}
                     >
                       <Trash2 size={16} />
                     </button>

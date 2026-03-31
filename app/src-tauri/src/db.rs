@@ -33,6 +33,7 @@ fn run_migrations(conn: &Connection) -> SqlResult<()> {
         ("004_ledger", include_str!("../migrations/004_ledger.sql")),
         ("005_todos", include_str!("../migrations/005_todos.sql")),
         ("006_health_checkups", include_str!("../migrations/006_health_checkups.sql")),
+        ("007_chat_conversations", include_str!("../migrations/007_chat_conversations.sql")),
     ];
 
     for (name, sql) in migrations {
