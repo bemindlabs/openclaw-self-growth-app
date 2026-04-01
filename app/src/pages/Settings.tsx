@@ -342,7 +342,7 @@ export default function SettingsPage() {
         <div className="bg-card border border-border rounded-lg p-4">
           <h3 className="font-medium mb-3">About</h3>
           <div className="text-sm text-muted-foreground space-y-1">
-            <p>Self Growth v0.1.0</p>
+            <p>Self Growth v{__APP_VERSION__}</p>
             <p>Self-development tracking app with AI-powered recommendations.</p>
             <p>Data is stored locally on your device.</p>
           </div>

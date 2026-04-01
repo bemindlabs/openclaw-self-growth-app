@@ -4,34 +4,82 @@ This file provides guidance to AI assistants when working with code in this work
 
 ## Project Overview
 
-> Replace this with a brief description of your project.
+Self Growth is an AI-powered personal development desktop app built with Tauri v2. It runs locally on macOS (and other desktop platforms) with all data stored in a bundled SQLite database. Features include skills tracking, habit tracking, goal management, journaling, health metrics, learning resources, financial ledger, AI coaching chat, routines, todos, progress stories, OCR receipt scanning, and semantic search (RAG).
+
+App identifier: `com.bemindlabs.growth.v2`
 
 ## Tech Stack
 
-> List your technologies, frameworks, and tools here.
+- **Frontend:** React 19, TypeScript, Vite 8, Tailwind CSS 4, React Router 7, Recharts, react-markdown
+- **Backend:** Rust (Tauri v2), rusqlite (bundled SQLite), fastembed 4 (local embeddings, desktop only), reqwest, chrono
+- **Testing:** Vitest 4, @testing-library/react, Playwright
+- **Package manager:** pnpm 10
 
 ## Key Commands
 
+All commands run from `app/`:
+
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
-# Development
-npm run dev
+# Development (starts Vite dev server + Tauri)
+pnpm tauri dev
 
-# Build
-npm run build
+# Production build
+pnpm tauri build
 
-# Test
-npm test
+# Frontend-only dev server (Vite, port 1421)
+pnpm dev
 
-# Lint
-npm run lint
+# Run tests
+pnpm test
+
+# Run tests in watch mode
+pnpm test:watch
 ```
 
 ## Architecture
 
-> Describe the project structure, key directories, and architectural decisions.
+```
+app/
+  src/                        # React frontend
+    App.tsx                   # Route definitions (React Router 7)
+    pages/                    # One file per route/feature
+    components/
+      layout/AppShell.tsx     # Persistent shell wrapping all routes
+    api/                      # Tauri IPC wrappers (one module per feature)
+      *.ts                    # invoke() calls to Rust commands
+      *.test.ts               # Vitest unit tests for API layer
+  src-tauri/                  # Rust backend
+    src/
+      lib.rs                  # Tauri builder, plugin registration, invoke_handler
+      main.rs                 # Entry point — delegates to lib::run()
+      commands/               # Feature-grouped Tauri command handlers
+      db.rs                   # SQLite init and DbState (Mutex<Connection>)
+      embedder.rs             # EmbedderState for fastembed (desktop only)
+      models.rs               # Shared Rust structs with serde
+      search.rs               # Semantic search / RAG logic
+      gateway.rs              # OpenClaw AI gateway HTTP client
+    Cargo.toml
+    tauri.conf.json
+```
+
+### Pages (routes)
+
+Dashboard, Routines, Habits, Todos, Health, Checkups, Learning, Skills, Goals, Journal, Search (RAG), Stories, Chat, Ledger, Settings, GetStarted.
+
+### IPC pattern
+
+The frontend calls Rust via `invoke()` from `@tauri-apps/api/core`, wrapped in typed functions inside `src/api/`. Each domain (skills, habits, goals, etc.) has its own `commands/<domain>.rs` module on the Rust side and a matching `src/api/<domain>.ts` on the frontend. Managed state is passed to commands via `tauri::State<DbState>` and `tauri::State<EmbedderState>`.
+
+### Data persistence
+
+SQLite database initialized at app startup (`db::init_db`) and stored in the platform app data directory. The `DbState` wraps the connection in a `Mutex` for safe concurrent access from async Tauri commands.
+
+### Embeddings / RAG
+
+`fastembed` runs locally (desktop builds only, excluded on iOS/Android via `cfg` flag). The `EmbedderState` is initialized at startup and used by `commands::rag` for semantic search across journeys, goals, and notes.
 
 ## Conventions
 

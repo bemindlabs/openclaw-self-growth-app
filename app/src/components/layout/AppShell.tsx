@@ -84,7 +84,7 @@ export default function AppShell() {
         </div>
         <footer className="hidden md:block border-t border-border bg-card px-4 py-2 text-center">
           <p className="text-[11px] text-muted-foreground">
-            Powered by Bemind Technology Co.,Ltd. (Bemindlabs) &middot; v0.1.0
+            Powered by Bemind Technology Co.,Ltd. (Bemindlabs) &middot; v{__APP_VERSION__}
           </p>
         </footer>
       </main>

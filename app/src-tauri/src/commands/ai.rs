@@ -2,14 +2,14 @@ use tauri::State;
 use crate::db::DbState;
 use crate::gateway;
 use crate::models::{ChatMessageInput, AiResponse};
-
-const COACH_SYSTEM: &str = "You are a supportive personal development coach. You give clear, actionable advice grounded in the user's actual tracked data (skills, routines, goals, learning items). Be specific — reference their data when relevant. Keep responses concise (3-5 paragraphs max). Focus on:\n- What they're doing well\n- One concrete next step they can take today\n- How their current activities connect to their goals";
-
-const INSIGHTS_SYSTEM: &str = "You are an analytical self-development advisor. Given the user's tracked data, identify patterns and provide structured insights. Format your response as:\n\n**Strengths**: What's working well (1-2 points)\n**Gaps**: Areas that need attention (1-2 points)\n**Recommendations**: Specific actions ranked by priority (2-3 items)\n**Connection**: How their skills, learning, and routines connect to their goals\n\nBe data-driven — reference their actual tracked items. Keep it concise and actionable.";
-
-const SUMMARIZE_SYSTEM: &str = "You are a concise progress summarizer for a self-development app. Write a brief, motivating narrative summary of the user's progress. Highlight:\n- Key activities and completions\n- Skill growth\n- Routine consistency\n- Progress toward goals\n\nKeep it to 2-3 short paragraphs. Use an encouraging but honest tone. Reference their actual data.";
-
-const CHAT_SYSTEM: &str = "You are a supportive AI coach embedded in Self Growth, a self-development app. The user tracks their skills, routines, learning items, and goals in this app. You have access to their current data as context.\n\nGuidelines:\n- Be warm, concise, and actionable\n- Reference their actual tracked data when relevant\n- Help them reflect on progress, overcome obstacles, and stay motivated\n- Suggest concrete next steps when appropriate\n- Keep responses focused (2-4 paragraphs unless they ask for more)\n- You can discuss routines, learning strategies, skill development, goal setting, habits, productivity, and personal growth";
+use crate::commands::constants::{
+    COACH_SYSTEM, INSIGHTS_SYSTEM, SUMMARIZE_SYSTEM, CHAT_SYSTEM,
+    TEMP_COACH, TEMP_INSIGHTS, TEMP_SUMMARIZE, TEMP_CHAT,
+    MAX_TOKENS_COACH, MAX_TOKENS_INSIGHTS, MAX_TOKENS_SUMMARIZE, MAX_TOKENS_CHAT,
+    LIMIT_CONTEXT_SKILLS, LIMIT_CONTEXT_ROUTINES, LIMIT_CONTEXT_GOALS,
+    LIMIT_CONTEXT_LEARNING, LIMIT_CONTEXT_STREAKS, LIMIT_CONTEXT_CHECKUPS,
+    LIMIT_CONTEXT_TODOS,
+};
 
 #[tauri::command]
 pub async fn ai_coach(
@@ -31,7 +31,7 @@ pub async fn ai_coach(
         serde_json::json!({"role": "user", "content": user_prompt}),
     ];
 
-    let (content, returned_model) = gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &messages, 0.7, 600).await?;
+    let (content, returned_model) = gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &messages, TEMP_COACH, MAX_TOKENS_COACH).await?;
     Ok(AiResponse { content, model: returned_model })
 }
 
@@ -50,7 +50,7 @@ pub async fn ai_insights(
         serde_json::json!({"role": "user", "content": user_prompt}),
     ];
 
-    let (content, returned_model) = gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &messages, 0.5, 700).await?;
+    let (content, returned_model) = gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &messages, TEMP_INSIGHTS, MAX_TOKENS_INSIGHTS).await?;
     Ok(AiResponse { content, model: returned_model })
 }
 
@@ -71,7 +71,7 @@ pub async fn ai_summarize(
         serde_json::json!({"role": "user", "content": user_prompt}),
     ];
 
-    let (content, returned_model) = gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &messages, 0.6, 400).await?;
+    let (content, returned_model) = gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &messages, TEMP_SUMMARIZE, MAX_TOKENS_SUMMARIZE).await?;
     Ok(AiResponse { content, model: returned_model })
 }
 
@@ -95,7 +95,7 @@ pub async fn ai_chat(
         llm_messages.push(serde_json::json!({"role": msg.role, "content": msg.content}));
     }
 
-    let (content, returned_model) = gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &llm_messages, 0.7, 600).await?;
+    let (content, returned_model) = gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &llm_messages, TEMP_CHAT, MAX_TOKENS_CHAT).await?;
     Ok(AiResponse { content, model: returned_model })
 }
 
@@ -104,7 +104,7 @@ fn build_context(state: &State<DbState>) -> Result<serde_json::Value, String> {
 
     let skills = gateway::query_strings(
         &conn,
-        "SELECT name, category, current_level, target_level FROM skills ORDER BY updated_at DESC LIMIT 10",
+        &format!("SELECT name, category, current_level, target_level FROM skills ORDER BY updated_at DESC LIMIT {LIMIT_CONTEXT_SKILLS}"),
         |row| {
             Ok(format!(
                 "{} ({}) — level {}/{}",

@@ -1,6 +1,20 @@
+use rusqlite::Connection;
 use tauri::State;
 use crate::db::DbState;
 use crate::models::{LedgerEntry, CreateLedgerEntry, LedgerSummary};
+
+const DEFAULT_CURRENCY: &str = "THB";
+
+/// Returns the user-configured default currency from the settings table,
+/// falling back to `DEFAULT_CURRENCY` when no value has been set.
+fn get_default_currency(conn: &Connection) -> String {
+    conn.query_row(
+        "SELECT value FROM settings WHERE key = 'default_currency'",
+        [],
+        |row| row.get::<_, String>(0),
+    )
+    .unwrap_or_else(|_| DEFAULT_CURRENCY.to_string())
+}
 
 #[tauri::command]
 pub fn list_ledger_entries(state: State<DbState>, category: Option<String>, limit: Option<i64>) -> Result<Vec<LedgerEntry>, String> {
@@ -44,7 +58,7 @@ pub fn list_ledger_entries(state: State<DbState>, category: Option<String>, limi
 #[tauri::command]
 pub fn create_ledger_entry(state: State<DbState>, data: CreateLedgerEntry) -> Result<LedgerEntry, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
-    let currency = data.currency.unwrap_or_else(|| "THB".to_string());
+    let currency = data.currency.unwrap_or_else(|| get_default_currency(&conn));
     let entry_type = data.entry_type.unwrap_or_else(|| "expense".to_string());
     let category = data.category.unwrap_or_else(|| "general".to_string());
     let entry_date = data.entry_date.unwrap_or_else(|| {
@@ -131,9 +145,10 @@ pub fn get_ledger_summary(state: State<DbState>, period: Option<String>) -> Resu
         |row| row.get(0),
     ).map_err(|e| e.to_string())?;
 
+    let default_currency = get_default_currency(&conn);
     let currency: String = conn.query_row(
-        "SELECT COALESCE((SELECT currency FROM ledger_entries ORDER BY created_at DESC LIMIT 1), 'THB')",
-        [],
+        "SELECT COALESCE((SELECT currency FROM ledger_entries ORDER BY created_at DESC LIMIT 1), ?1)",
+        rusqlite::params![default_currency],
         |row| row.get(0),
     ).map_err(|e| e.to_string())?;
 
