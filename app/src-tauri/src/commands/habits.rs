@@ -61,6 +61,7 @@ pub fn create_habit(state: State<DbState>, data: CreateHabit) -> Result<Habit, S
     .map_err(|e| e.to_string())
 }
 
+#[allow(clippy::too_many_arguments)]
 #[tauri::command]
 pub fn update_habit(
     state: State<DbState>,
