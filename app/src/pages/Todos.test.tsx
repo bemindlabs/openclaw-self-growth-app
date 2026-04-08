@@ -12,6 +12,7 @@ describe("TodosPage", () => {
       if (cmd === "get_today_todos") return [];
       if (cmd === "list_todos") return [];
       if (cmd === "get_overdue_todos") return [];
+      if (cmd === "list_goals") return [];
       return undefined;
     });
   });

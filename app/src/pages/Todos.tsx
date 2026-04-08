@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { todosApi, type Todo } from "@/api/todos";
+import { goalsApi, type Goal } from "@/api/goals";
 import {
   ListTodo,
   Plus,
@@ -10,6 +11,7 @@ import {
   ChevronDown,
   ChevronUp,
   Calendar,
+  Target,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -43,7 +45,9 @@ function formatDate(date: string | null): string {
 
 export default function TodosPage() {
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const [filter, setFilter] = useState<FilterTab>("today");
+  const [goalFilter, setGoalFilter] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +59,7 @@ export default function TodosPage() {
   const [dueTime, setDueTime] = useState("");
   const [priority, setPriority] = useState("medium");
   const [category, setCategory] = useState("");
+  const [selectedGoalId, setSelectedGoalId] = useState<number | null>(null);
 
   const loadTodos = async () => {
     try {
@@ -79,6 +84,19 @@ export default function TodosPage() {
     }
   };
 
+  const loadGoals = async () => {
+    try {
+      const data = await goalsApi.list("active");
+      setGoals(data ?? []);
+    } catch {
+      // goals are supplementary; silently ignore load failures
+    }
+  };
+
+  useEffect(() => {
+    loadGoals();
+  }, []);
+
   useEffect(() => {
     loadTodos();
   }, [filter]);
@@ -93,6 +111,7 @@ export default function TodosPage() {
         due_time: dueTime || undefined,
         priority,
         category: category.trim() || undefined,
+        goal_id: selectedGoalId ?? undefined,
       });
       setTitle("");
       setDescription("");
@@ -100,6 +119,7 @@ export default function TodosPage() {
       setDueTime("");
       setPriority("medium");
       setCategory("");
+      setSelectedGoalId(null);
       setShowForm(false);
       await loadTodos();
     } catch (e) {
@@ -125,10 +145,14 @@ export default function TodosPage() {
     }
   };
 
-  const activeTodos = todos.filter(
+  const goalFiltered = goalFilter !== null
+    ? todos.filter((t) => t.goal_id === goalFilter)
+    : todos;
+
+  const activeTodos = goalFiltered.filter(
     (t) => t.status !== "completed" && t.status !== "cancelled"
   );
-  const completedTodos = todos.filter((t) => t.status === "completed");
+  const completedTodos = goalFiltered.filter((t) => t.status === "completed");
 
   const displayTodos = filter === "completed" ? completedTodos : activeTodos;
 
@@ -215,6 +239,25 @@ export default function TodosPage() {
                 className="w-full px-2 py-1.5 border border-border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
+            {goals.length > 0 && (
+              <div className="col-span-2 md:col-span-4">
+                <label className="block text-xs text-muted-foreground mb-1">Link to Goal</label>
+                <select
+                  value={selectedGoalId ?? ""}
+                  onChange={(e) =>
+                    setSelectedGoalId(e.target.value === "" ? null : Number(e.target.value))
+                  }
+                  className="w-full px-2 py-1.5 border border-border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="">No goal</option>
+                  {goals.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
           <div className="flex gap-2">
             <button
@@ -234,29 +277,49 @@ export default function TodosPage() {
         </div>
       )}
 
-      {/* Filter Tabs */}
-      <div className="flex gap-1 mb-4">
-        {(
-          [
-            { key: "today", label: "Today" },
-            { key: "all", label: "All" },
-            { key: "overdue", label: "Overdue" },
-            { key: "completed", label: "Completed" },
-          ] as const
-        ).map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setFilter(tab.key)}
-            className={cn(
-              "px-3 py-1.5 rounded-full text-sm transition-colors",
-              filter === tab.key
-                ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-            )}
+      {/* Filter Tabs + Goal Filter */}
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        <div className="flex gap-1">
+          {(
+            [
+              { key: "today", label: "Today" },
+              { key: "all", label: "All" },
+              { key: "overdue", label: "Overdue" },
+              { key: "completed", label: "Completed" },
+            ] as const
+          ).map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setFilter(tab.key)}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-sm transition-colors",
+                filter === tab.key
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {goals.length > 0 && (
+          <select
+            value={goalFilter ?? ""}
+            onChange={(e) =>
+              setGoalFilter(e.target.value === "" ? null : Number(e.target.value))
+            }
+            className="ml-auto px-2 py-1.5 border border-border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+            aria-label="Filter by goal"
           >
-            {tab.label}
-          </button>
-        ))}
+            <option value="">All goals</option>
+            {goals.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.title}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {/* Todo List */}
@@ -265,6 +328,9 @@ export default function TodosPage() {
           {displayTodos.map((todo) => {
             const pc = priorityConfig[todo.priority] || priorityConfig.medium;
             const overdue = isOverdue(todo);
+            const linkedGoal = todo.goal_id
+              ? goals.find((g) => g.id === todo.goal_id)
+              : undefined;
             return (
               <div
                 key={todo.id}
@@ -305,6 +371,12 @@ export default function TodosPage() {
                     {todo.category && (
                       <span className="text-xs px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">
                         {todo.category}
+                      </span>
+                    )}
+                    {linkedGoal && (
+                      <span className="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                        <Target size={10} />
+                        {linkedGoal.title}
                       </span>
                     )}
                   </div>
