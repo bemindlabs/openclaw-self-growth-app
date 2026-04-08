@@ -6,7 +6,7 @@ use tauri::State;
 pub fn list_habits(state: State<DbState>) -> Result<Vec<Habit>, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     let mut stmt = conn
-        .prepare("SELECT id, name, description, frequency, color, is_active, created_at FROM habits WHERE is_active = 1 ORDER BY created_at DESC")
+        .prepare("SELECT id, name, description, frequency, color, is_active, created_at, identity_statement FROM habits WHERE is_active = 1 ORDER BY created_at DESC")
         .map_err(|e| e.to_string())?;
 
     let habits = stmt
@@ -19,6 +19,7 @@ pub fn list_habits(state: State<DbState>) -> Result<Vec<Habit>, String> {
                 color: row.get(4)?,
                 is_active: row.get(5)?,
                 created_at: row.get(6)?,
+                identity_statement: row.get(7)?,
             })
         })
         .map_err(|e| e.to_string())?
@@ -35,14 +36,14 @@ pub fn create_habit(state: State<DbState>, data: CreateHabit) -> Result<Habit, S
     let color = data.color.unwrap_or_else(|| "#6366f1".to_string());
 
     conn.execute(
-        "INSERT INTO habits (name, description, frequency, color) VALUES (?1, ?2, ?3, ?4)",
-        rusqlite::params![data.name, data.description, frequency, color],
+        "INSERT INTO habits (name, description, frequency, color, identity_statement) VALUES (?1, ?2, ?3, ?4, ?5)",
+        rusqlite::params![data.name, data.description, frequency, color, data.identity_statement],
     )
     .map_err(|e| e.to_string())?;
 
     let id = conn.last_insert_rowid();
     conn.query_row(
-        "SELECT id, name, description, frequency, color, is_active, created_at FROM habits WHERE id = ?1",
+        "SELECT id, name, description, frequency, color, is_active, created_at, identity_statement FROM habits WHERE id = ?1",
         [id],
         |row| {
             Ok(Habit {
@@ -53,6 +54,7 @@ pub fn create_habit(state: State<DbState>, data: CreateHabit) -> Result<Habit, S
                 color: row.get(4)?,
                 is_active: row.get(5)?,
                 created_at: row.get(6)?,
+                identity_statement: row.get(7)?,
             })
         },
     )
@@ -68,6 +70,7 @@ pub fn update_habit(
     frequency: Option<String>,
     color: Option<String>,
     is_active: Option<bool>,
+    identity_statement: Option<String>,
 ) -> Result<Habit, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
 
@@ -106,9 +109,16 @@ pub fn update_habit(
         )
         .map_err(|e| e.to_string())?;
     }
+    if let Some(v) = identity_statement {
+        conn.execute(
+            "UPDATE habits SET identity_statement = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
 
     conn.query_row(
-        "SELECT id, name, description, frequency, color, is_active, created_at FROM habits WHERE id = ?1",
+        "SELECT id, name, description, frequency, color, is_active, created_at, identity_statement FROM habits WHERE id = ?1",
         [id],
         |row| {
             Ok(Habit {
@@ -119,6 +129,7 @@ pub fn update_habit(
                 color: row.get(4)?,
                 is_active: row.get(5)?,
                 created_at: row.get(6)?,
+                identity_statement: row.get(7)?,
             })
         },
     )

@@ -12,6 +12,7 @@ const mockHabit: Habit = {
   color: "#FF5733",
   is_active: true,
   created_at: "2024-01-01T00:00:00",
+  identity_statement: "I'm becoming someone who prioritizes health",
 };
 
 const mockHabitLog: HabitLog = {
@@ -56,6 +57,16 @@ describe("habitsApi", () => {
         data: { name: "Meditate" },
       });
     });
+
+    it("calls create_habit with identity_statement when provided", async () => {
+      mockInvoke.mockResolvedValueOnce(mockHabit);
+      const data = {
+        name: "Morning run",
+        identity_statement: "I'm becoming someone who prioritizes health",
+      };
+      await habitsApi.create(data);
+      expect(mockInvoke).toHaveBeenCalledWith("create_habit", { data });
+    });
   });
 
   describe("update", () => {
@@ -73,6 +84,15 @@ describe("habitsApi", () => {
       mockInvoke.mockResolvedValueOnce(mockHabit);
       await habitsApi.update(2, {});
       expect(mockInvoke).toHaveBeenCalledWith("update_habit", { id: 2 });
+    });
+
+    it("calls update_habit with identity_statement when provided", async () => {
+      mockInvoke.mockResolvedValueOnce(mockHabit);
+      await habitsApi.update(1, { identity_statement: "I'm becoming someone who prioritizes health" });
+      expect(mockInvoke).toHaveBeenCalledWith("update_habit", {
+        id: 1,
+        identity_statement: "I'm becoming someone who prioritizes health",
+      });
     });
   });
 
@@ -98,6 +118,21 @@ describe("habitsApi", () => {
       mockInvoke.mockResolvedValueOnce(false);
       const result = await habitsApi.toggle(1, "2024-06-15");
       expect(result).toBe(false);
+    });
+  });
+
+  describe("identity_statement", () => {
+    it("list returns habits with identity_statement field", async () => {
+      mockInvoke.mockResolvedValueOnce([mockHabit]);
+      const result = await habitsApi.list();
+      expect(result[0].identity_statement).toBe("I'm becoming someone who prioritizes health");
+    });
+
+    it("list returns habits with null identity_statement when unset", async () => {
+      const habitWithoutIdentity: Habit = { ...mockHabit, identity_statement: null };
+      mockInvoke.mockResolvedValueOnce([habitWithoutIdentity]);
+      const result = await habitsApi.list();
+      expect(result[0].identity_statement).toBeNull();
     });
   });
 

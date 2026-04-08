@@ -46,6 +46,10 @@ fn run_migrations(conn: &Connection) -> SqlResult<()> {
             "007_chat_conversations",
             include_str!("../migrations/007_chat_conversations.sql"),
         ),
+        (
+            "008_habit_identity",
+            include_str!("../migrations/008_habit_identity.sql"),
+        ),
     ];
 
     for (name, sql) in migrations {

@@ -23,6 +23,7 @@ export default function Habits() {
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [identityStatement, setIdentityStatement] = useState("");
 
   const last7 = getLast7Days();
 
@@ -47,9 +48,11 @@ export default function Habits() {
     await habitsApi.create({
       name: name.trim(),
       description: description.trim() || undefined,
+      identity_statement: identityStatement.trim() || undefined,
     });
     setName("");
     setDescription("");
+    setIdentityStatement("");
     setShowForm(false);
     loadHabits();
   };
@@ -118,6 +121,13 @@ export default function Habits() {
             className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
             rows={2}
           />
+          <input
+            type="text"
+            placeholder="I'm becoming someone who... (optional)"
+            value={identityStatement}
+            onChange={(e) => setIdentityStatement(e.target.value)}
+            className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
+          />
           <div className="flex gap-2">
             <button onClick={handleCreate} className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm">
               Create
@@ -145,6 +155,9 @@ export default function Habits() {
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <h3 className="font-medium">{habit.name}</h3>
+                    {habit.identity_statement && (
+                      <p className="text-xs text-muted-foreground mt-0.5 italic">{habit.identity_statement}</p>
+                    )}
                     {habit.description && (
                       <p className="text-xs text-muted-foreground mt-0.5">{habit.description}</p>
                     )}

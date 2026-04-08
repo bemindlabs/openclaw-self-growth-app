@@ -8,6 +8,7 @@ export interface Habit {
   color: string;
   is_active: boolean;
   created_at: string;
+  identity_statement: string | null;
 }
 
 export interface HabitLog {
@@ -20,9 +21,9 @@ export interface HabitLog {
 
 export const habitsApi = {
   list: () => invoke<Habit[]>("list_habits"),
-  create: (data: { name: string; description?: string; frequency?: string; color?: string }) =>
+  create: (data: { name: string; description?: string; frequency?: string; color?: string; identity_statement?: string }) =>
     invoke<Habit>("create_habit", { data }),
-  update: (id: number, fields: Partial<Pick<Habit, "name" | "description" | "frequency" | "color" | "is_active">>) =>
+  update: (id: number, fields: Partial<Pick<Habit, "name" | "description" | "frequency" | "color" | "is_active" | "identity_statement">>) =>
     invoke<Habit>("update_habit", { id, ...fields }),
   delete: (id: number) => invoke<void>("delete_habit", { id }),
   toggle: (habitId: number, date: string) =>
