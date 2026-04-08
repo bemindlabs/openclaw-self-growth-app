@@ -1,5 +1,6 @@
 pub mod ai;
 pub mod backup;
+#[allow(dead_code)]
 pub mod constants;
 pub mod chat;
 pub mod checkups;
