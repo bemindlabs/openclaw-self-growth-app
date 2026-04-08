@@ -1,9 +1,29 @@
 import { useEffect, useState } from "react";
-import { progressApi, type DashboardStats } from "@/api/progress";
+import {
+  progressApi,
+  type DashboardStats,
+  type LifeBalanceDomain,
+  type MoodHabitCorrelation,
+} from "@/api/progress";
 import { aiApi, type AiResponse } from "@/api/ai";
 import { todosApi, type Todo } from "@/api/todos";
 import { healthApi, type HealthSummary } from "@/api/health";
 import { habitsApi, type Habit, type HabitLog } from "@/api/habits";
+import {
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+} from "recharts";
 import {
   Flame,
   Target,
@@ -60,6 +80,8 @@ const priorityColors: Record<string, string> = {
 
 export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [lifeBalance, setLifeBalance] = useState<LifeBalanceDomain[]>([]);
+  const [moodCorrelations, setMoodCorrelations] = useState<MoodHabitCorrelation[] | null>(null);
   const [todayTodos, setTodayTodos] = useState<Todo[]>([]);
   const [healthSummary, setHealthSummary] = useState<HealthSummary[]>([]);
   const [habits, setHabits] = useState<Habit[]>([]);
@@ -85,6 +107,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     progressApi.getDashboardStats().then(setStats).catch(console.error);
+    progressApi.getLifeBalance().then(setLifeBalance).catch(console.error);
+    progressApi.getMoodHabitCorrelation().then(setMoodCorrelations).catch(console.error);
     todosApi.getToday().then(setTodayTodos).catch(console.error);
     healthApi.getSummary().then(setHealthSummary).catch(console.error);
 
@@ -363,6 +387,148 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Life Balance Radar Chart */}
+      {lifeBalance.length > 0 && (
+        <div className="mt-4 bg-card rounded-lg border border-border p-4">
+          <h3 className="font-semibold text-sm mb-1">Wheel of Life</h3>
+          <p className="text-[10px] text-muted-foreground mb-3">
+            Engagement score per life domain over the last 30 days (0–100).
+          </p>
+          <ResponsiveContainer width="100%" height={280}>
+            <RadarChart data={lifeBalance} margin={{ top: 10, right: 20, bottom: 10, left: 20 }}>
+              <PolarGrid stroke="var(--border)" />
+              <PolarAngleAxis
+                dataKey="domain"
+                tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+              />
+              <PolarRadiusAxis
+                angle={90}
+                domain={[0, 100]}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 9 }}
+                tickCount={4}
+              />
+              <Radar
+                name="Score"
+                dataKey="score"
+                stroke="var(--primary)"
+                fill="var(--primary)"
+                fillOpacity={0.25}
+                strokeWidth={2}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: "var(--card)",
+                  border: "1px solid var(--border)",
+                  borderRadius: "6px",
+                  fontSize: "12px",
+                  color: "var(--foreground)",
+                }}
+                formatter={(value) => [`${Math.round(Number(value))}`, "Score"]}
+              />
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Mood-Habit Insights */}
+      <div className="mt-4 bg-card rounded-lg border border-border p-4">
+        <div className="flex items-center gap-2 mb-1">
+          <TrendingUp size={16} className="text-primary" />
+          <h3 className="font-semibold text-sm">Mood-Habit Insights</h3>
+        </div>
+        <p className="text-[10px] text-muted-foreground mb-3">
+          Habits ranked by their impact on your mood (avg. mood rating on days completed vs. not).
+        </p>
+        {moodCorrelations === null ? (
+          <p className="text-xs text-muted-foreground py-3 text-center">Loading...</p>
+        ) : moodCorrelations.length === 0 ? (
+          <p className="text-xs text-muted-foreground py-3 text-center">
+            Log more journal entries with mood ratings to see correlations. At least 14 mood-rated
+            entries and 7 habit completion days are required per habit.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {/* Ranked list */}
+            <div className="space-y-2">
+              {moodCorrelations.map((c) => (
+                <div key={c.habit_name} className="flex items-center gap-3">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: c.habit_color }}
+                  />
+                  <span className="text-sm flex-1 truncate">{c.habit_name}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums">
+                    {c.avg_mood_with.toFixed(1)} vs {c.avg_mood_without.toFixed(1)}
+                  </span>
+                  <span
+                    className={cn(
+                      "flex items-center gap-0.5 text-xs font-medium tabular-nums",
+                      c.diff > 0 ? "text-success" : c.diff < 0 ? "text-destructive" : "text-muted-foreground"
+                    )}
+                  >
+                    {c.diff > 0 ? (
+                      <TrendingUp size={12} />
+                    ) : c.diff < 0 ? (
+                      <TrendingDown size={12} />
+                    ) : (
+                      <Minus size={12} />
+                    )}
+                    {c.diff > 0 ? "+" : ""}
+                    {c.diff.toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Bar chart comparison */}
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart
+                data={moodCorrelations.map((c) => ({
+                  name: c.habit_name.length > 12 ? c.habit_name.slice(0, 12) + "…" : c.habit_name,
+                  "With habit": Number(c.avg_mood_with.toFixed(2)),
+                  "Without habit": Number(c.avg_mood_without.toFixed(2)),
+                  color: c.habit_color,
+                }))}
+                margin={{ top: 4, right: 8, bottom: 4, left: -16 }}
+                barCategoryGap="30%"
+              >
+                <XAxis
+                  dataKey="name"
+                  tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  domain={[0, 10]}
+                  tick={{ fill: "var(--muted-foreground)", fontSize: 9 }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: "var(--card)",
+                    border: "1px solid var(--border)",
+                    borderRadius: "6px",
+                    fontSize: "12px",
+                    color: "var(--foreground)",
+                  }}
+                  formatter={(value) => [Number(value).toFixed(2), ""]}
+                />
+                <Legend
+                  wrapperStyle={{ fontSize: "11px", color: "var(--muted-foreground)" }}
+                />
+                <Bar dataKey="With habit" radius={[3, 3, 0, 0]}>
+                  {moodCorrelations.map((c) => (
+                    <Cell key={c.habit_name} fill={c.habit_color} fillOpacity={0.85} />
+                  ))}
+                </Bar>
+                <Bar dataKey="Without habit" radius={[3, 3, 0, 0]} fill="var(--muted-foreground)" fillOpacity={0.35} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
 
       {/* Quick Coach */}
       <div className="mt-4 bg-card rounded-lg border border-border p-4">

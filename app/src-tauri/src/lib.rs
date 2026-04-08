@@ -59,6 +59,9 @@ pub fn run() {
             commands::progress::list_progress,
             commands::progress::create_progress_entry,
             commands::progress::get_dashboard_stats,
+            commands::progress::get_life_balance,
+            // Analytics
+            commands::analytics::get_mood_habit_correlation,
             // Settings
             commands::settings::get_app_setting,
             commands::settings::set_app_setting,

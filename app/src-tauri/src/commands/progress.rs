@@ -1,5 +1,5 @@
 use crate::db::DbState;
-use crate::models::{CreateProgressEntry, DashboardStats, ProgressEntry};
+use crate::models::{CreateProgressEntry, DashboardStats, LifeBalanceDomain, ProgressEntry};
 use tauri::State;
 
 #[tauri::command]
@@ -137,4 +137,126 @@ pub fn get_dashboard_stats(state: State<DbState>) -> Result<DashboardStats, Stri
         completions_today,
         current_streak,
     })
+}
+
+#[tauri::command]
+pub fn get_life_balance(state: State<DbState>) -> Result<Vec<LifeBalanceDomain>, String> {
+    let conn = state.0.lock().map_err(|e| e.to_string())?;
+
+    // Health: count of distinct days with health_metrics in last 30 days, normalize to 0-100
+    let health_days: i64 = conn
+        .query_row(
+            "SELECT COUNT(DISTINCT date(recorded_at)) FROM health_metrics WHERE recorded_at >= date('now', '-30 days')",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or(0);
+    let health_score = ((health_days as f64) / 30.0 * 100.0).min(100.0);
+
+    // Habits: % of last 30 days that have at least one habit log
+    let habit_days: i64 = conn
+        .query_row(
+            "SELECT COUNT(DISTINCT logged_date) FROM habit_logs WHERE logged_date >= date('now', '-30 days')",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or(0);
+    let habit_score = ((habit_days as f64) / 30.0 * 100.0).min(100.0);
+
+    // Skills: average of (current_level / target_level * 100) across all skills where target_level > 0
+    let skill_score: f64 = {
+        let raw: f64 = conn
+            .query_row(
+                "SELECT COALESCE(AVG(CAST(current_level AS REAL) / CAST(target_level AS REAL) * 100.0), 0.0) FROM skills WHERE target_level > 0",
+                [],
+                |row| row.get::<_, f64>(0),
+            )
+            .unwrap_or(0.0_f64);
+        raw.min(100.0_f64)
+    };
+
+    // Learning: % of items with status 'completed' or 'in_progress'
+    let total_learning: i64 = conn
+        .query_row("SELECT COUNT(*) FROM learning_items", [], |row| row.get(0))
+        .unwrap_or(0);
+    let active_learning: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM learning_items WHERE status IN ('completed', 'in_progress')",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or(0);
+    let learning_score = if total_learning > 0 {
+        (active_learning as f64) / (total_learning as f64) * 100.0
+    } else {
+        0.0
+    };
+
+    // Goals: % of goals with status 'active' or 'completed'
+    let total_goals: i64 = conn
+        .query_row("SELECT COUNT(*) FROM goals", [], |row| row.get(0))
+        .unwrap_or(0);
+    let engaged_goals: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM goals WHERE status IN ('active', 'completed')",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or(0);
+    let goals_score = if total_goals > 0 {
+        (engaged_goals as f64) / (total_goals as f64) * 100.0
+    } else {
+        0.0
+    };
+
+    // Journal: count of entries in last 30 days, capped at 30 = 100%
+    let journal_count: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM journal_entries WHERE created_at >= date('now', '-30 days')",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or(0);
+    let journal_score = ((journal_count as f64) / 30.0 * 100.0).min(100.0);
+
+    // Finance: count of ledger entries in last 30 days, capped at 30 = 100%
+    let finance_count: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM ledger_entries WHERE created_at >= date('now', '-30 days')",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or(0);
+    let finance_score = ((finance_count as f64) / 30.0 * 100.0).min(100.0);
+
+    Ok(vec![
+        LifeBalanceDomain {
+            domain: "Health".to_string(),
+            score: health_score,
+        },
+        LifeBalanceDomain {
+            domain: "Habits".to_string(),
+            score: habit_score,
+        },
+        LifeBalanceDomain {
+            domain: "Skills".to_string(),
+            score: skill_score,
+        },
+        LifeBalanceDomain {
+            domain: "Learning".to_string(),
+            score: learning_score,
+        },
+        LifeBalanceDomain {
+            domain: "Goals".to_string(),
+            score: goals_score,
+        },
+        LifeBalanceDomain {
+            domain: "Journal".to_string(),
+            score: journal_score,
+        },
+        LifeBalanceDomain {
+            domain: "Finance".to_string(),
+            score: finance_score,
+        },
+    ])
 }

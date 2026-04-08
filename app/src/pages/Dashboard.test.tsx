@@ -32,6 +32,10 @@ describe("Dashboard", () => {
           return [];
         case "list_habits":
           return [];
+        case "get_life_balance":
+          return [];
+        case "get_mood_habit_correlation":
+          return [];
         default:
           return undefined;
       }
@@ -90,6 +94,8 @@ describe("Dashboard", () => {
         ];
       if (cmd === "get_health_summary") return [];
       if (cmd === "list_habits") return [];
+      if (cmd === "get_life_balance") return [];
+      if (cmd === "get_mood_habit_correlation") return [];
       return undefined;
     });
 
@@ -124,12 +130,81 @@ describe("Dashboard", () => {
           { metric_type: "steps", latest_value: 8500, avg_7d: 7200, trend: "up" },
         ];
       if (cmd === "list_habits") return [];
+      if (cmd === "get_life_balance") return [];
+      if (cmd === "get_mood_habit_correlation") return [];
       return undefined;
     });
 
     render(<Dashboard />);
     await waitFor(() => {
       expect(screen.getByText("Health Snapshot")).toBeTruthy();
+    });
+  });
+
+  it("shows mood-habit insights card heading", async () => {
+    render(<Dashboard />);
+    await waitFor(() => {
+      expect(screen.getByText("Mood-Habit Insights")).toBeTruthy();
+    });
+  });
+
+  it("shows insufficient data message when correlations are empty", async () => {
+    render(<Dashboard />);
+    await waitFor(() => {
+      expect(screen.getByText(/Log more journal entries/)).toBeTruthy();
+    });
+  });
+
+  it("shows correlation rows when data is present", async () => {
+    mockInvoke.mockImplementation(async (cmd: string) => {
+      if (cmd === "get_dashboard_stats") return mockStats;
+      if (cmd === "get_today_todos") return [];
+      if (cmd === "get_health_summary") return [];
+      if (cmd === "list_habits") return [];
+      if (cmd === "get_life_balance") return [];
+      if (cmd === "get_mood_habit_correlation")
+        return [
+          {
+            habit_name: "Morning run",
+            habit_color: "#6366f1",
+            avg_mood_with: 7.8,
+            avg_mood_without: 5.4,
+            diff: 2.4,
+            sample_days: 30,
+          },
+        ];
+      return undefined;
+    });
+
+    render(<Dashboard />);
+    await waitFor(() => {
+      expect(screen.getByText("Morning run")).toBeTruthy();
+    });
+  });
+
+  it("shows Wheel of Life when life balance data is available", async () => {
+    mockInvoke.mockImplementation(async (cmd: string) => {
+      if (cmd === "get_dashboard_stats") return mockStats;
+      if (cmd === "get_today_todos") return [];
+      if (cmd === "get_health_summary") return [];
+      if (cmd === "list_habits") return [];
+      if (cmd === "get_mood_habit_correlation") return [];
+      if (cmd === "get_life_balance")
+        return [
+          { domain: "Health", score: 80 },
+          { domain: "Habits", score: 60 },
+          { domain: "Skills", score: 75 },
+          { domain: "Learning", score: 50 },
+          { domain: "Goals", score: 90 },
+          { domain: "Journal", score: 40 },
+          { domain: "Finance", score: 30 },
+        ];
+      return undefined;
+    });
+
+    render(<Dashboard />);
+    await waitFor(() => {
+      expect(screen.getByText("Wheel of Life")).toBeTruthy();
     });
   });
 
@@ -141,6 +216,8 @@ describe("Dashboard", () => {
       if (cmd === "list_habits")
         return [{ id: 1, name: "Meditate", description: null, color: "#22c55e" }];
       if (cmd === "get_habit_logs") return [];
+      if (cmd === "get_life_balance") return [];
+      if (cmd === "get_mood_habit_correlation") return [];
       return undefined;
     });
 

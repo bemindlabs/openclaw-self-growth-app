@@ -1,5 +1,19 @@
 import { invoke } from "@tauri-apps/api/core";
 
+export interface MoodHabitCorrelation {
+  habit_name: string;
+  habit_color: string;
+  avg_mood_with: number;
+  avg_mood_without: number;
+  diff: number;
+  sample_days: number;
+}
+
+export interface LifeBalanceDomain {
+  domain: string;
+  score: number;
+}
+
 export interface ProgressEntry {
   id: number;
   skill_id: number | null;
@@ -30,4 +44,7 @@ export const progressApi = {
     notes?: string;
   }) => invoke<ProgressEntry>("create_progress_entry", { data }),
   getDashboardStats: () => invoke<DashboardStats>("get_dashboard_stats"),
+  getLifeBalance: () => invoke<LifeBalanceDomain[]>("get_life_balance"),
+  getMoodHabitCorrelation: () =>
+    invoke<MoodHabitCorrelation[]>("get_mood_habit_correlation"),
 };

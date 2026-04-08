@@ -123,6 +123,12 @@ pub struct CreateGoal {
 }
 
 #[derive(Debug, Serialize)]
+pub struct LifeBalanceDomain {
+    pub domain: String,
+    pub score: f64,
+}
+
+#[derive(Debug, Serialize)]
 pub struct DashboardStats {
     pub total_skills: i64,
     pub total_learning_items: i64,
@@ -238,6 +244,7 @@ pub struct Habit {
     pub color: String,
     pub is_active: bool,
     pub created_at: String,
+    pub identity_statement: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -246,6 +253,7 @@ pub struct CreateHabit {
     pub description: Option<String>,
     pub frequency: Option<String>,
     pub color: Option<String>,
+    pub identity_statement: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -354,6 +362,17 @@ pub struct CreateTodo {
     pub priority: Option<String>,
     pub category: Option<String>,
     pub goal_id: Option<i64>,
+}
+
+// Analytics
+#[derive(Debug, Serialize)]
+pub struct MoodHabitCorrelation {
+    pub habit_name: String,
+    pub habit_color: String,
+    pub avg_mood_with: f64,
+    pub avg_mood_without: f64,
+    pub diff: f64,
+    pub sample_days: i64,
 }
 
 // Health Checkups
@@ -578,5 +597,69 @@ mod tests {
         assert_eq!(ct2.due_date, None);
         assert_eq!(ct2.priority, None);
         assert_eq!(ct2.goal_id, None);
+    }
+
+    // --- Habit ---
+
+    #[test]
+    fn test_habit_roundtrip_with_identity_statement() {
+        let habit = Habit {
+            id: 1,
+            name: "Morning run".to_string(),
+            description: Some("Run 5km every morning".to_string()),
+            frequency: "daily".to_string(),
+            color: "#6366f1".to_string(),
+            is_active: true,
+            created_at: "2026-01-01T00:00:00Z".to_string(),
+            identity_statement: Some("I'm becoming someone who prioritizes health".to_string()),
+        };
+        let json_str = serde_json::to_string(&habit).unwrap();
+        let deserialized: Habit = serde_json::from_str(&json_str).unwrap();
+        assert_eq!(deserialized.id, habit.id);
+        assert_eq!(deserialized.name, habit.name);
+        assert_eq!(deserialized.frequency, habit.frequency);
+        assert_eq!(
+            deserialized.identity_statement,
+            Some("I'm becoming someone who prioritizes health".to_string())
+        );
+    }
+
+    #[test]
+    fn test_habit_roundtrip_without_identity_statement() {
+        let habit = Habit {
+            id: 2,
+            name: "Meditate".to_string(),
+            description: None,
+            frequency: "daily".to_string(),
+            color: "#6366f1".to_string(),
+            is_active: true,
+            created_at: "2026-01-01T00:00:00Z".to_string(),
+            identity_statement: None,
+        };
+        let json_str = serde_json::to_string(&habit).unwrap();
+        let deserialized: Habit = serde_json::from_str(&json_str).unwrap();
+        assert_eq!(deserialized.identity_statement, None);
+    }
+
+    #[test]
+    fn test_create_habit_deserialize_with_identity_statement() {
+        let full = json!({
+            "name": "Morning run",
+            "description": "Run 5km",
+            "frequency": "daily",
+            "color": "#6366f1",
+            "identity_statement": "I'm becoming someone who prioritizes health"
+        });
+        let ch: CreateHabit = serde_json::from_value(full).unwrap();
+        assert_eq!(ch.name, "Morning run");
+        assert_eq!(
+            ch.identity_statement,
+            Some("I'm becoming someone who prioritizes health".to_string())
+        );
+
+        let minimal = json!({ "name": "Meditate" });
+        let ch2: CreateHabit = serde_json::from_value(minimal).unwrap();
+        assert_eq!(ch2.name, "Meditate");
+        assert_eq!(ch2.identity_statement, None);
     }
 }
