@@ -5,6 +5,17 @@ import { Send, Bot, User, Trash2, Plus, MessageSquare, PanelLeftClose, PanelLeft
 import { cn } from "@/lib/utils";
 import Markdown from "@/components/ui/Markdown";
 
+const JUMPSTART_PROMPTS = [
+  "Review my week",
+  "Help me plan tomorrow",
+  "What patterns do you see?",
+  "Check my goal progress",
+  "Give me a motivation boost",
+  "Suggest a new habit",
+  "Analyze my journal mood",
+  "How am I doing overall?",
+] as const;
+
 export default function ChatPage() {
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<number | null>(null);
@@ -92,8 +103,16 @@ export default function ChatPage() {
     setEditTitle("");
   };
 
-  const handleSend = async () => {
-    const text = input.trim();
+  const handleJumpstart = (prompt: string) => {
+    if (loading) return;
+    setInput(prompt);
+    // Use a small timeout so the input state is flushed before handleSend reads it
+    setTimeout(() => {
+      handleSendText(prompt);
+    }, 0);
+  };
+
+  const handleSendText = async (text: string) => {
     if (!text || loading) return;
 
     const userMessage: ChatMessage = { role: "user", content: text };
@@ -131,6 +150,10 @@ export default function ChatPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSend = async () => {
+    await handleSendText(input.trim());
   };
 
   const handleClear = async () => {
@@ -277,6 +300,20 @@ export default function ChatPage() {
               <p className="text-xs mt-1 max-w-xs">
                 Ask about your routines, skills, learning goals, or get personalized development advice.
               </p>
+              <div
+                className="mt-5 flex gap-2 overflow-x-auto pb-1 max-w-sm w-full justify-center flex-wrap"
+                aria-label="Jumpstart prompts"
+              >
+                {JUMPSTART_PROMPTS.map((prompt) => (
+                  <button
+                    key={prompt}
+                    onClick={() => handleJumpstart(prompt)}
+                    className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full bg-secondary border border-border text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors whitespace-nowrap"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 

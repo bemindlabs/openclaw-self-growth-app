@@ -60,6 +60,53 @@ describe("ChatPage", () => {
     });
   });
 
+  it("renders jumpstart prompt buttons in empty state", () => {
+    render(<ChatPage />);
+    expect(screen.getByText("Review my week")).toBeTruthy();
+    expect(screen.getByText("Help me plan tomorrow")).toBeTruthy();
+    expect(screen.getByText("What patterns do you see?")).toBeTruthy();
+    expect(screen.getByText("Check my goal progress")).toBeTruthy();
+    expect(screen.getByText("Give me a motivation boost")).toBeTruthy();
+    expect(screen.getByText("Suggest a new habit")).toBeTruthy();
+    expect(screen.getByText("Analyze my journal mood")).toBeTruthy();
+    expect(screen.getByText("How am I doing overall?")).toBeTruthy();
+  });
+
+  it("clicking a jumpstart prompt sends it as a message", async () => {
+    mockInvoke
+      .mockResolvedValueOnce([])                                                           // mount: list_conversations
+      .mockResolvedValueOnce({ id: 1, title: "Review my week", created_at: "", updated_at: "" }) // create_conversation
+      .mockResolvedValueOnce({})                                                           // save_chat_message (user)
+      .mockResolvedValueOnce({ content: "Here is your weekly review.", model: "test" })   // ai_chat
+      .mockResolvedValueOnce({})                                                           // save_chat_message (assistant)
+      .mockResolvedValueOnce([]);                                                          // list_conversations refresh
+
+    render(<ChatPage />);
+    fireEvent.click(screen.getByText("Review my week"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Here is your weekly review.")).toBeTruthy();
+    });
+  });
+
+  it("hides jumpstart prompts after a message is sent", async () => {
+    mockInvoke
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce({ id: 1, title: "Hello", created_at: "", updated_at: "" })
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ content: "Hello!", model: "test" })
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce([]);
+
+    render(<ChatPage />);
+    fireEvent.change(screen.getByPlaceholderText("Type a message..."), { target: { value: "Hello" } });
+    fireEvent.keyDown(screen.getByPlaceholderText("Type a message..."), { key: "Enter" });
+
+    await waitFor(() => {
+      expect(screen.queryByText("Review my week")).toBeNull();
+    });
+  });
+
   it("shows Clear button after messages", async () => {
     // On mount: list_conversations -> [] (default)
     // On send: create_conversation, save_chat_message (user), ai_chat, save_chat_message (assistant), list_conversations
