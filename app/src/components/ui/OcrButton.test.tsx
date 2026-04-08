@@ -78,16 +78,14 @@ describe("OcrButton", () => {
   it("shows alert on OCR failure", async () => {
     mockOpen.mockResolvedValueOnce("/path/to/image.png" as any);
     mockInvoke.mockRejectedValueOnce(new Error("OCR engine failed"));
-    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
 
     render(<OcrButton onResult={onResult} />);
     fireEvent.click(screen.getByText("Scan Image"));
 
     await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith("OCR failed: Error: OCR engine failed");
+      expect(screen.getByText("OCR failed: Error: OCR engine failed")).toBeTruthy();
     });
     expect(onResult).not.toHaveBeenCalled();
-    alertSpy.mockRestore();
   });
 
   it("applies custom className", () => {

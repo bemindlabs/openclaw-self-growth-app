@@ -5,7 +5,7 @@ use crate::db::DbState;
 /// Get the path to the current database file.
 fn db_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
     let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
-    Ok(app_data_dir.join("bemind-growth.db"))
+    Ok(app_data_dir.join("self-growth.db"))
 }
 
 /// Export (backup) the database to a given path.

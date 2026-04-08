@@ -35,7 +35,7 @@ describe("Goals", () => {
   it("shows empty state when no goals", async () => {
     render(<Goals />);
     await waitFor(() => {
-      expect(screen.getByText("No goals yet.")).toBeTruthy();
+      expect(screen.getByText("No goals yet. Add one to get started.")).toBeTruthy();
     });
   });
 

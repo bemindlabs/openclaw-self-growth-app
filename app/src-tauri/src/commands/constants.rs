@@ -11,16 +11,16 @@
 // ---------------------------------------------------------------------------
 
 /// General coaching / chat — warm, conversational.
-pub const TEMP_COACH: f32 = 0.7;
+pub const TEMP_COACH: f64 = 0.7;
 
 /// Analytical insights — lower temperature for structured, data-driven output.
-pub const TEMP_INSIGHTS: f32 = 0.5;
+pub const TEMP_INSIGHTS: f64 = 0.5;
 
 /// Progress summaries — slightly creative but still grounded.
-pub const TEMP_SUMMARIZE: f32 = 0.6;
+pub const TEMP_SUMMARIZE: f64 = 0.6;
 
 /// Chat completion — same balance as coaching.
-pub const TEMP_CHAT: f32 = 0.7;
+pub const TEMP_CHAT: f64 = 0.7;
 
 /// Story generation — higher temperature for creative prose.
 pub const TEMP_STORY: f32 = 0.9;

@@ -10,6 +10,7 @@ import Habits from "./pages/Habits";
 import Journal from "./pages/Journal";
 import SearchPage from "./pages/Search";
 import StoryPage from "./pages/Story";
+import StoriesPage from "./pages/Stories";
 import ChatPage from "./pages/Chat";
 import SettingsPage from "./pages/Settings";
 import HealthPage from "./pages/Health";
@@ -36,7 +37,8 @@ export default function App() {
             <Route path="goals" element={<Goals />} />
             <Route path="journal" element={<Journal />} />
             <Route path="search" element={<SearchPage />} />
-            <Route path="stories" element={<StoryPage />} />
+            <Route path="stories" element={<StoriesPage />} />
+            <Route path="stories/new" element={<StoryPage />} />
             <Route path="chat" element={<ChatPage />} />
             <Route path="ledger" element={<LedgerPage />} />
             <Route path="settings" element={<SettingsPage />} />

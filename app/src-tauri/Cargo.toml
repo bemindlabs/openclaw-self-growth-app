@@ -1,10 +1,10 @@
 [package]
-name = "bemind-growth"
-version = "0.1.0"
+name = "self-growth"
+version = "2026.4.8"
 edition = "2021"
 
 [lib]
-name = "bemind_growth_lib"
+name = "self_growth_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

@@ -208,25 +208,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 
 [[package]]
-name = "bemind-growth"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "fastembed",
- "hex",
- "quick-xml 0.37.5",
- "reqwest 0.12.28",
- "rusqlite",
- "serde",
- "serde_json",
- "sha2",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-shell",
-]
-
-[[package]]
 name = "bit-set"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4322,6 +4303,25 @@ dependencies = [
  "rustc-hash",
  "servo_arc 0.4.3",
  "smallvec",
+]
+
+[[package]]
+name = "self-growth"
+version = "2026.4.8"
+dependencies = [
+ "chrono",
+ "fastembed",
+ "hex",
+ "quick-xml 0.37.5",
+ "reqwest 0.12.28",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-shell",
 ]
 
 [[package]]

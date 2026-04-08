@@ -14,7 +14,7 @@ function renderWithRouter(initialEntry = "/") {
 describe("AppShell", () => {
   it("renders the Logo", () => {
     renderWithRouter();
-    expect(screen.getAllByText("Bemind").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Self").length).toBeGreaterThan(0);
   });
 
   it("renders the tagline", () => {
@@ -44,9 +44,9 @@ describe("AppShell", () => {
     ];
 
     for (const label of expectedLabels) {
-      // Each label appears in both desktop sidebar and mobile bottom nav
+      // Labels appear in the desktop sidebar; overflow mobile items are hidden until "More" is clicked
       const elements = screen.getAllByText(label);
-      expect(elements.length).toBeGreaterThanOrEqual(2);
+      expect(elements.length).toBeGreaterThanOrEqual(1);
     }
   });
 
@@ -58,7 +58,7 @@ describe("AppShell", () => {
 
   it("renders the version number", () => {
     renderWithRouter();
-    const version = screen.getAllByText(/v0\.1\.0/);
+    const version = screen.getAllByText(/v\d+\.\d+\.\d+/);
     expect(version.length).toBeGreaterThanOrEqual(1);
   });
 });

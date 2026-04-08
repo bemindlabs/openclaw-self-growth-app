@@ -75,11 +75,18 @@ The frontend calls Rust via `invoke()` from `@tauri-apps/api/core`, wrapped in t
 
 ### Data persistence
 
-SQLite database initialized at app startup (`db::init_db`) and stored in the platform app data directory. The `DbState` wraps the connection in a `Mutex` for safe concurrent access from async Tauri commands.
+SQLite database (`self-growth.db`) initialized at app startup (`db::init_db`) and stored in the platform app data directory. The `DbState` wraps the connection in a `Mutex` for safe concurrent access from async Tauri commands.
 
 ### Embeddings / RAG
 
 `fastembed` runs locally (desktop builds only, excluded on iOS/Android via `cfg` flag). The `EmbedderState` is initialized at startup and used by `commands::rag` for semantic search across journeys, goals, and notes.
+
+## Versioning
+
+Uses calendar versioning: `yyyy.m.d` (e.g., `2026.4.8`). Version is set in three files:
+- `app/package.json`
+- `app/src-tauri/Cargo.toml`
+- `app/src-tauri/tauri.conf.json`
 
 ## Conventions
 

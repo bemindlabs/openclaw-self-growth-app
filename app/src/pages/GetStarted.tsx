@@ -199,9 +199,9 @@ Health data (steps, heart rate, sleep, weight, calories, distance, workouts) is 
 
 **How do I backup my data?**
 Your database is stored at:
-- **macOS**: \`~/Library/Application Support/com.bemindlabs.growth.v2/bemind-growth.db\`
-- **Linux**: \`~/.local/share/bemind-growth/bemind-growth.db\`
-- **Windows**: \`%AppData%\\BemindLabs\\Self Growth\\bemind-growth.db\`
+- **macOS**: \`~/Library/Application Support/com.bemindlabs.growth.v2/self-growth.db\`
+- **Linux**: \`~/.local/share/self-growth/self-growth.db\`
+- **Windows**: \`%AppData%\\BemindLabs\\Self Growth\\self-growth.db\`
 
 Copy this file to back up all your data.
 

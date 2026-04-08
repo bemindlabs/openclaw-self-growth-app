@@ -248,7 +248,7 @@ export default function SettingsPage() {
             <button
               onClick={async () => {
                 const path = await save({
-                  defaultPath: `bemind-growth-backup-${new Date().toISOString().split("T")[0]}.db`,
+                  defaultPath: `self-growth-backup-${new Date().toISOString().split("T")[0]}.db`,
                   filters: [{ name: "SQLite Database", extensions: ["db"] }],
                 });
                 if (path) {

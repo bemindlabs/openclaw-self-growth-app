@@ -54,7 +54,7 @@ describe("SettingsPage", () => {
     render(<SettingsPage />);
     await waitFor(() => {
       expect(screen.getByText("About")).toBeTruthy();
-      expect(screen.getByText("Self Growth v0.1.0")).toBeTruthy();
+      expect(screen.getByText(/Self Growth v\d+\.\d+\.\d+/)).toBeTruthy();
     });
   });
 

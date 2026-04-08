@@ -116,7 +116,7 @@ describe("TodosPage", () => {
       expect(screen.getByText("Finish task")).toBeTruthy();
     });
 
-    fireEvent.click(screen.getByTitle("Mark complete"));
+    fireEvent.click(screen.getByRole("button", { name: "Complete: Finish task" }));
 
     await waitFor(() => {
       expect(mockInvoke).toHaveBeenCalledWith("complete_todo", { id: 42 });

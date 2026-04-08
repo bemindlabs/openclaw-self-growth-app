@@ -3,6 +3,10 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { invoke } from "@tauri-apps/api/core";
 import ChatPage from "./Chat";
 
+vi.mock("@tauri-apps/api/core", () => ({
+  invoke: vi.fn(),
+}));
+
 const mockInvoke = vi.mocked(invoke);
 
 vi.mock("react-markdown", () => ({
@@ -12,6 +16,8 @@ vi.mock("react-markdown", () => ({
 describe("ChatPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: return [] for list_conversations and undefined for everything else
+    mockInvoke.mockResolvedValue([]);
     // jsdom doesn't implement scrollTo
     Element.prototype.scrollTo = vi.fn();
   });
@@ -33,7 +39,15 @@ describe("ChatPage", () => {
   });
 
   it("sends a message and displays response", async () => {
-    mockInvoke.mockResolvedValueOnce({ content: "Hello! I'm your AI coach.", model: "test" });
+    // On mount: list_conversations -> [] (default)
+    // On send: create_conversation, save_chat_message (user), ai_chat, save_chat_message (assistant), list_conversations
+    mockInvoke
+      .mockResolvedValueOnce([])                                                  // mount: list_conversations
+      .mockResolvedValueOnce({ id: 1, title: "Hello", created_at: "", updated_at: "" }) // create_conversation
+      .mockResolvedValueOnce({})                                                  // save_chat_message (user)
+      .mockResolvedValueOnce({ content: "Hello! I'm your AI coach.", model: "test" }) // ai_chat
+      .mockResolvedValueOnce({})                                                  // save_chat_message (assistant)
+      .mockResolvedValueOnce([]);                                                 // list_conversations refresh
 
     render(<ChatPage />);
     const input = screen.getByPlaceholderText("Type a message...");
@@ -47,7 +61,15 @@ describe("ChatPage", () => {
   });
 
   it("shows Clear button after messages", async () => {
-    mockInvoke.mockResolvedValueOnce({ content: "Hi!", model: "test" });
+    // On mount: list_conversations -> [] (default)
+    // On send: create_conversation, save_chat_message (user), ai_chat, save_chat_message (assistant), list_conversations
+    mockInvoke
+      .mockResolvedValueOnce([])                                                  // mount: list_conversations
+      .mockResolvedValueOnce({ id: 1, title: "Hi", created_at: "", updated_at: "" }) // create_conversation
+      .mockResolvedValueOnce({})                                                  // save_chat_message (user)
+      .mockResolvedValueOnce({ content: "Hi!", model: "test" })                  // ai_chat
+      .mockResolvedValueOnce({})                                                  // save_chat_message (assistant)
+      .mockResolvedValueOnce([]);                                                 // list_conversations refresh
 
     render(<ChatPage />);
     fireEvent.change(screen.getByPlaceholderText("Type a message..."), { target: { value: "Hi" } });

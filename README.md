@@ -109,9 +109,9 @@ pub fn list_skills(db: State<'_, DbState>) -> Result<Vec<Skill>, String> { ... }
 ### Database
 
 SQLite with WAL mode, stored at:
-- **macOS:** `~/Library/Application Support/com.bemindlabs.growth.v2/bemind-growth.db`
-- **Linux:** `~/.local/share/bemind-growth/bemind-growth.db`
-- **Windows:** `%AppData%\BemindLabs\Self Growth\bemind-growth.db`
+- **macOS:** `~/Library/Application Support/com.bemindlabs.growth.v2/self-growth.db`
+- **Linux:** `~/.local/share/self-growth/self-growth.db`
+- **Windows:** `%AppData%\BemindLabs\Self Growth\self-growth.db`
 
 ### LLM Integration
 

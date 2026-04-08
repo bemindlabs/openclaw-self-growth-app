@@ -10,13 +10,13 @@ describe("Logo", () => {
 
   it("shows brand text by default", () => {
     render(<Logo />);
-    expect(screen.getByText("Bemind")).toBeTruthy();
+    expect(screen.getByText("Self")).toBeTruthy();
     expect(screen.getByText("Growth")).toBeTruthy();
   });
 
   it("hides brand text when showText is false", () => {
     render(<Logo showText={false} />);
-    expect(screen.queryByText("Bemind")).toBeNull();
+    expect(screen.queryByText("Self")).toBeNull();
     expect(screen.queryByText("Growth")).toBeNull();
   });
 
