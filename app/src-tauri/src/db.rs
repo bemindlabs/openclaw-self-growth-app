@@ -23,17 +23,29 @@ fn run_migrations(conn: &Connection) -> SqlResult<()> {
             id         INTEGER PRIMARY KEY AUTOINCREMENT,
             name       TEXT NOT NULL UNIQUE,
             applied_at TEXT NOT NULL DEFAULT (datetime('now'))
-        );"
+        );",
     )?;
 
     let migrations: Vec<(&str, &str)> = vec![
         ("001_initial", include_str!("../migrations/001_initial.sql")),
-        ("002_new_features", include_str!("../migrations/002_new_features.sql")),
-        ("003_health_integration", include_str!("../migrations/003_health_integration.sql")),
+        (
+            "002_new_features",
+            include_str!("../migrations/002_new_features.sql"),
+        ),
+        (
+            "003_health_integration",
+            include_str!("../migrations/003_health_integration.sql"),
+        ),
         ("004_ledger", include_str!("../migrations/004_ledger.sql")),
         ("005_todos", include_str!("../migrations/005_todos.sql")),
-        ("006_health_checkups", include_str!("../migrations/006_health_checkups.sql")),
-        ("007_chat_conversations", include_str!("../migrations/007_chat_conversations.sql")),
+        (
+            "006_health_checkups",
+            include_str!("../migrations/006_health_checkups.sql"),
+        ),
+        (
+            "007_chat_conversations",
+            include_str!("../migrations/007_chat_conversations.sql"),
+        ),
     ];
 
     for (name, sql) in migrations {
@@ -45,10 +57,7 @@ fn run_migrations(conn: &Connection) -> SqlResult<()> {
 
         if !already_applied {
             conn.execute_batch(sql)?;
-            conn.execute(
-                "INSERT INTO _migrations (name) VALUES (?1)",
-                [name],
-            )?;
+            conn.execute("INSERT INTO _migrations (name) VALUES (?1)", [name])?;
         }
     }
 

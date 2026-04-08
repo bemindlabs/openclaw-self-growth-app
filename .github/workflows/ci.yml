@@ -60,8 +60,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
+      - name: Cargo fmt
+        run: cargo fmt -- --check
+
       - name: Cargo check
         run: cargo check
 
       - name: Cargo clippy
         run: cargo clippy -- -D warnings
+
+      - name: Cargo test
+        run: cargo test

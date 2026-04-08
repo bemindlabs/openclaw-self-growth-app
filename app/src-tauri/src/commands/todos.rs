@@ -1,6 +1,6 @@
-use tauri::State;
 use crate::db::DbState;
-use crate::models::{Todo, CreateTodo};
+use crate::models::{CreateTodo, Todo};
+use tauri::State;
 
 const TODO_COLUMNS: &str = "id, title, description, due_date, due_time, priority, status, category, goal_id, completed_at, created_at, updated_at";
 
@@ -46,7 +46,9 @@ pub fn list_todos(
     }
     if let Some(d) = days {
         let interval = format!("{} days", d);
-        sql.push_str(&format!(" AND (due_date IS NULL OR due_date <= date('now', ?{idx}))"));
+        sql.push_str(&format!(
+            " AND (due_date IS NULL OR due_date <= date('now', ?{idx}))"
+        ));
         params.push(Box::new(interval));
     }
 
@@ -78,7 +80,8 @@ pub fn create_todo(state: State<DbState>, data: CreateTodo) -> Result<Todo, Stri
         &format!("SELECT {} FROM todos WHERE id = ?1", TODO_COLUMNS),
         [id],
         row_to_todo,
-    ).map_err(|e| e.to_string())
+    )
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -98,44 +101,78 @@ pub fn update_todo(
     let conn = state.0.lock().map_err(|e| e.to_string())?;
 
     if let Some(v) = title {
-        conn.execute("UPDATE todos SET title = ?1, updated_at = datetime('now') WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE todos SET title = ?1, updated_at = datetime('now') WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(v) = description {
-        conn.execute("UPDATE todos SET description = ?1, updated_at = datetime('now') WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE todos SET description = ?1, updated_at = datetime('now') WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(v) = due_date {
-        conn.execute("UPDATE todos SET due_date = ?1, updated_at = datetime('now') WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE todos SET due_date = ?1, updated_at = datetime('now') WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(v) = due_time {
-        conn.execute("UPDATE todos SET due_time = ?1, updated_at = datetime('now') WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE todos SET due_time = ?1, updated_at = datetime('now') WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(v) = priority {
-        conn.execute("UPDATE todos SET priority = ?1, updated_at = datetime('now') WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE todos SET priority = ?1, updated_at = datetime('now') WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(ref v) = status {
-        conn.execute("UPDATE todos SET status = ?1, updated_at = datetime('now') WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE todos SET status = ?1, updated_at = datetime('now') WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
         if v == "completed" {
             conn.execute("UPDATE todos SET completed_at = datetime('now') WHERE id = ?1 AND completed_at IS NULL", [id]).map_err(|e| e.to_string())?;
         }
     }
     if let Some(v) = category {
-        conn.execute("UPDATE todos SET category = ?1, updated_at = datetime('now') WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE todos SET category = ?1, updated_at = datetime('now') WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(v) = goal_id {
-        conn.execute("UPDATE todos SET goal_id = ?1, updated_at = datetime('now') WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE todos SET goal_id = ?1, updated_at = datetime('now') WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
 
     conn.query_row(
         &format!("SELECT {} FROM todos WHERE id = ?1", TODO_COLUMNS),
         [id],
         row_to_todo,
-    ).map_err(|e| e.to_string())
+    )
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub fn delete_todo(state: State<DbState>, id: i64) -> Result<(), String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
-    conn.execute("DELETE FROM todos WHERE id = ?1", [id]).map_err(|e| e.to_string())?;
+    conn.execute("DELETE FROM todos WHERE id = ?1", [id])
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -151,7 +188,8 @@ pub fn complete_todo(state: State<DbState>, id: i64) -> Result<Todo, String> {
         &format!("SELECT {} FROM todos WHERE id = ?1", TODO_COLUMNS),
         [id],
         row_to_todo,
-    ).map_err(|e| e.to_string())
+    )
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]

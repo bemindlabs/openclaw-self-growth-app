@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import { Suspense } from "react";
 import App from "./App";
 
 // Mock all page components to avoid their side effects (API calls)
@@ -21,14 +22,24 @@ vi.mock("./pages/Checkups", () => ({ default: () => <div>Checkups Page</div> }))
 vi.mock("./pages/GetStarted", () => ({ default: () => <div>GetStarted Page</div> }));
 
 describe("App", () => {
-  it("renders the Dashboard at the root route", () => {
-    render(<App />);
-    expect(screen.getByText("Dashboard Page")).toBeTruthy();
+  it("renders the Dashboard at the root route", async () => {
+    render(
+      <Suspense fallback={null}>
+        <App />
+      </Suspense>
+    );
+    await waitFor(() => expect(screen.getByText("Dashboard Page")).toBeTruthy());
   });
 
-  it("renders the AppShell layout with navigation", () => {
-    render(<App />);
+  it("renders the AppShell layout with navigation", async () => {
+    render(
+      <Suspense fallback={null}>
+        <App />
+      </Suspense>
+    );
     // AppShell navigation items should be present
-    expect(screen.getAllByText("Dashboard").length).toBeGreaterThanOrEqual(1);
+    await waitFor(() =>
+      expect(screen.getAllByText("Dashboard").length).toBeGreaterThanOrEqual(1)
+    );
   });
 });

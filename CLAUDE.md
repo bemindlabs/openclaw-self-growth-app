@@ -95,6 +95,16 @@ Uses calendar versioning: `yyyy.m.d` (e.g., `2026.4.8`). Version is set in three
 - Use conventional commit messages
 - Keep PR scope focused
 
+## Git Hooks
+
+Pre-commit and pre-push hooks enforce quality gates locally. To install after cloning:
+
+```bash
+sh scripts/setup-hooks.sh
+```
+
+Hooks are stored in `.githooks/` and installed to the git hooks directory.
+
 ## Scrum Board
 
 This project uses AI-DLC for development lifecycle management:

@@ -1,6 +1,6 @@
-use tauri::State;
 use crate::db::DbState;
 use crate::models::{CreateRoutine, CreateRoutineStep, Routine, RoutineLog, RoutineStep};
+use tauri::State;
 
 #[tauri::command]
 pub fn list_routines(state: State<DbState>) -> Result<Vec<Routine>, String> {
@@ -68,16 +68,32 @@ pub fn update_routine(
     let conn = state.0.lock().map_err(|e| e.to_string())?;
 
     if let Some(v) = name {
-        conn.execute("UPDATE routines SET name = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE routines SET name = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(v) = description {
-        conn.execute("UPDATE routines SET description = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE routines SET description = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(v) = frequency {
-        conn.execute("UPDATE routines SET frequency = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE routines SET frequency = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(v) = is_active {
-        conn.execute("UPDATE routines SET is_active = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE routines SET is_active = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
 
     conn.query_row(
@@ -100,12 +116,16 @@ pub fn update_routine(
 #[tauri::command]
 pub fn delete_routine(state: State<DbState>, id: i64) -> Result<(), String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
-    conn.execute("DELETE FROM routines WHERE id = ?1", [id]).map_err(|e| e.to_string())?;
+    conn.execute("DELETE FROM routines WHERE id = ?1", [id])
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 
 #[tauri::command]
-pub fn get_routine_steps(state: State<DbState>, routine_id: i64) -> Result<Vec<RoutineStep>, String> {
+pub fn get_routine_steps(
+    state: State<DbState>,
+    routine_id: i64,
+) -> Result<Vec<RoutineStep>, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     let mut stmt = conn
         .prepare("SELECT id, routine_id, title, duration_min, sort_order FROM routine_steps WHERE routine_id = ?1 ORDER BY sort_order")
@@ -129,7 +149,10 @@ pub fn get_routine_steps(state: State<DbState>, routine_id: i64) -> Result<Vec<R
 }
 
 #[tauri::command]
-pub fn add_routine_step(state: State<DbState>, data: CreateRoutineStep) -> Result<RoutineStep, String> {
+pub fn add_routine_step(
+    state: State<DbState>,
+    data: CreateRoutineStep,
+) -> Result<RoutineStep, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     conn.execute(
         "INSERT INTO routine_steps (routine_id, title, duration_min, sort_order) VALUES (?1, ?2, ?3, ?4)",
@@ -157,7 +180,8 @@ pub fn add_routine_step(state: State<DbState>, data: CreateRoutineStep) -> Resul
 #[tauri::command]
 pub fn delete_routine_step(state: State<DbState>, id: i64) -> Result<(), String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
-    conn.execute("DELETE FROM routine_steps WHERE id = ?1", [id]).map_err(|e| e.to_string())?;
+    conn.execute("DELETE FROM routine_steps WHERE id = ?1", [id])
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -193,7 +217,11 @@ pub fn complete_routine(
 }
 
 #[tauri::command]
-pub fn get_routine_logs(state: State<DbState>, routine_id: i64, limit: Option<i64>) -> Result<Vec<RoutineLog>, String> {
+pub fn get_routine_logs(
+    state: State<DbState>,
+    routine_id: i64,
+    limit: Option<i64>,
+) -> Result<Vec<RoutineLog>, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     let limit = limit.unwrap_or(30);
     let mut stmt = conn

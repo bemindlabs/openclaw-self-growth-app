@@ -1,0 +1,9 @@
+#!/bin/sh
+# Pre-commit hook: TypeScript type check + tests
+set -e
+cd "$(git rev-parse --show-toplevel)/app"
+echo "pre-commit: type checking..."
+npx tsc --noEmit
+echo "pre-commit: running tests..."
+pnpm test
+echo "pre-commit: passed"

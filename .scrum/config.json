@@ -1,0 +1,37 @@
+{
+  "project": {
+    "name": "Self Growth",
+    "key": "SG",
+    "type": "app",
+    "version": "2026.4.8"
+  },
+  "team": {
+    "mode": "solo",
+    "size": 1
+  },
+  "sprint": {
+    "duration": 7,
+    "unit": "days",
+    "current": null
+  },
+  "workflow": {
+    "statuses": ["backlog", "in_progress", "done"]
+  },
+  "estimation": {
+    "scale": "fibonacci",
+    "values": [1, 2, 3, 5, 8, 13]
+  },
+  "qualityGates": {
+    "typeCheck": "pnpm tsc --noEmit",
+    "test": "pnpm test",
+    "build": "pnpm build",
+    "rustCheck": "cargo check",
+    "rustClippy": "cargo clippy -- -D warnings"
+  },
+  "techStack": {
+    "frontend": ["React 19", "TypeScript", "Vite 8", "Tailwind CSS 4"],
+    "backend": ["Rust", "Tauri v2", "SQLite", "fastembed"],
+    "testing": ["Vitest", "Testing Library"],
+    "ci": "GitHub Actions"
+  }
+}

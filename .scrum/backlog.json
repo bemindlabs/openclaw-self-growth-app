@@ -1,0 +1,322 @@
+[
+  {
+    "id": "SG-1",
+    "title": "Weekly AI Insight Report",
+    "type": "story",
+    "description": "As a user, I want a weekly AI-generated report that correlates data across all domains (sleep vs mood vs habits vs spending) so I can discover patterns I can't see myself.",
+    "acceptanceCriteria": [
+      "Auto-generates every Sunday or on demand",
+      "Queries habits, journal mood, health metrics, ledger, routines from past 7 days",
+      "Sends cross-domain data to AI with a structured analysis prompt",
+      "Renders markdown report with 3-5 actionable insights",
+      "Shows correlation highlights (e.g., 'Exercise days had 40% higher mood ratings')",
+      "Accessible from Dashboard and as a dedicated page"
+    ],
+    "points": 8,
+    "priority": "critical",
+    "status": "backlog",
+    "epic": "SG-EPIC-1",
+    "labels": ["ai", "analytics", "high-impact"]
+  },
+  {
+    "id": "SG-2",
+    "title": "Daily Check-in Flow",
+    "type": "story",
+    "description": "As a user, I want a 2-minute structured daily check-in with mood rating, AI-generated reflection prompt, and one commitment so I stay engaged every day.",
+    "acceptanceCriteria": [
+      "Quick mood selector (1-5 or emoji scale)",
+      "AI generates a context-aware reflection prompt from recent data",
+      "User sets one commitment for the day",
+      "Check-in saved to journal with 'check-in' tag",
+      "Dashboard shows today's check-in status",
+      "Takes under 2 minutes to complete"
+    ],
+    "points": 5,
+    "priority": "high",
+    "status": "backlog",
+    "epic": "SG-EPIC-1",
+    "labels": ["ai", "engagement", "ux"]
+  },
+  {
+    "id": "SG-3",
+    "title": "Jumpstart Prompts for AI Chat",
+    "type": "story",
+    "description": "As a user, I want pre-built contextual prompts on the Chat page ('Review my week', 'Help me plan tomorrow', 'What patterns do you see?') so I can start meaningful conversations quickly.",
+    "acceptanceCriteria": [
+      "5-8 jumpstart prompt buttons above chat input",
+      "Prompts are context-aware (pull recent data)",
+      "Clicking a prompt sends it as a message",
+      "Prompts rotate/update based on time of day and recent activity",
+      "Include: review week, plan tomorrow, pattern analysis, goal check-in, motivation boost"
+    ],
+    "points": 3,
+    "priority": "high",
+    "status": "backlog",
+    "epic": "SG-EPIC-1",
+    "labels": ["ai", "ux", "low-effort"]
+  },
+  {
+    "id": "SG-4",
+    "title": "Proactive AI Nudges (Desktop Notifications)",
+    "type": "story",
+    "description": "As a user, I want context-aware desktop notifications that celebrate streaks, remind me of routines, and alert me to patterns so the app works for me even when I'm not looking at it.",
+    "acceptanceCriteria": [
+      "Opt-in notification system in Settings",
+      "Streak celebrations (e.g., '7-day meditation streak!')",
+      "Gentle routine reminders based on usual completion time",
+      "Pattern alerts (e.g., 'Sleep dropped below 7h for 3 days')",
+      "Uses Tauri notification API",
+      "Configurable frequency and quiet hours"
+    ],
+    "points": 5,
+    "priority": "medium",
+    "status": "backlog",
+    "epic": "SG-EPIC-1",
+    "labels": ["ai", "notifications", "tauri"]
+  },
+  {
+    "id": "SG-5",
+    "title": "Goal-Habit Linking with AI Breakdown",
+    "type": "story",
+    "description": "As a user, I want to link habits to goals and have AI decompose goals into milestones and suggested habits so my daily actions connect to long-term aspirations.",
+    "acceptanceCriteria": [
+      "New migration: goal_milestones table, goal_habits association table",
+      "AI breaks a goal into 3-5 milestones with target dates",
+      "AI suggests 2-3 habits that support each goal",
+      "Goal progress auto-updates from linked habit completion and milestone status",
+      "Goal detail page shows linked habits and milestone timeline",
+      "Completing all milestones marks goal as completed"
+    ],
+    "points": 8,
+    "priority": "critical",
+    "status": "backlog",
+    "epic": "SG-EPIC-2",
+    "labels": ["schema", "ai", "core"]
+  },
+  {
+    "id": "SG-6",
+    "title": "Wire Todo-Goal Connection",
+    "type": "story",
+    "description": "As a user, I want todos linked to goals so completing tasks updates goal progress and I can filter todos by goal.",
+    "acceptanceCriteria": [
+      "todos.goal_id is queried and used in the UI",
+      "Todo creation allows selecting a parent goal",
+      "Todos page has goal filter dropdown",
+      "Completing a todo contributes to goal progress calculation",
+      "Goal detail page shows linked todos"
+    ],
+    "points": 3,
+    "priority": "high",
+    "status": "backlog",
+    "epic": "SG-EPIC-2",
+    "labels": ["schema", "fix", "low-effort"]
+  },
+  {
+    "id": "SG-7",
+    "title": "Financial-Goal Bridge",
+    "type": "story",
+    "description": "As a user, I want to link spending categories to goals and see budget vs actual so my financial tracking supports my growth aspirations.",
+    "acceptanceCriteria": [
+      "Ledger entries can be tagged with a goal",
+      "Goal detail page shows financial summary (spent/budgeted)",
+      "Monthly spending by goal-category breakdown",
+      "AI insight can reference financial-goal connections"
+    ],
+    "points": 5,
+    "priority": "medium",
+    "status": "backlog",
+    "epic": "SG-EPIC-2",
+    "labels": ["ledger", "goals"]
+  },
+  {
+    "id": "SG-8",
+    "title": "Emotion Analysis on Journal Entries",
+    "type": "story",
+    "description": "As a user, I want automatic emotion detection on my journal entries so I get richer mood trends without manually rating every entry.",
+    "acceptanceCriteria": [
+      "Run emotion classification model (DistilBERT via ort crate) on journal save",
+      "Detect: joy, sadness, anger, fear, surprise, neutral",
+      "Store emotion label + confidence in journal_entries table",
+      "Show emotion badge on journal list cards",
+      "Emotion trend chart on Journal page (sparkline over 30 days)",
+      "Works offline (model bundled, ~70MB quantized)"
+    ],
+    "points": 8,
+    "priority": "high",
+    "status": "backlog",
+    "epic": "SG-EPIC-3",
+    "labels": ["ai", "local-ml", "journal"]
+  },
+  {
+    "id": "SG-9",
+    "title": "Voice Journaling with Local Transcription",
+    "type": "story",
+    "description": "As a user, I want to speak my journal entries and have them transcribed locally so I can journal faster and more naturally.",
+    "acceptanceCriteria": [
+      "Record button on Journal page",
+      "Local speech-to-text via whisper.cpp (whisper-cpp-plus crate)",
+      "Uses Whisper tiny/base model (~75-150MB)",
+      "Transcription saved as journal entry text",
+      "Audio recording optionally saved alongside text",
+      "Works fully offline",
+      "Supports English (extensible to other languages)"
+    ],
+    "points": 8,
+    "priority": "medium",
+    "status": "backlog",
+    "epic": "SG-EPIC-3",
+    "labels": ["ai", "local-ml", "journal", "audio"]
+  },
+  {
+    "id": "SG-10",
+    "title": "Future Self Digital Twin Chat",
+    "type": "story",
+    "description": "As a user, I want to chat with an AI-simulated future version of myself (based on my current goals, habits, and data) to explore consequences of my choices.",
+    "acceptanceCriteria": [
+      "New Chat mode: 'Talk to Future You'",
+      "AI persona generated from user's goals, habits, values, and projected outcomes",
+      "Conversation feels like talking to an older, wiser version of yourself",
+      "Persona updates as user data changes",
+      "Grounded in user's actual data, not generic advice",
+      "Clear disclaimer that this is a simulation"
+    ],
+    "points": 5,
+    "priority": "medium",
+    "status": "backlog",
+    "epic": "SG-EPIC-1",
+    "labels": ["ai", "innovation", "chat"]
+  },
+  {
+    "id": "SG-11",
+    "title": "Spaced Repetition for Growth Items",
+    "type": "story",
+    "description": "As a user, I want past journal entries, goal reflections, and insights resurfaced at optimal intervals so I retain and build on my self-knowledge.",
+    "acceptanceCriteria": [
+      "Use fsrs-rs crate for scheduling",
+      "Any item (journal entry, goal, skill, learning note) can become a review item",
+      "Daily check-in surfaces 1-3 items for review",
+      "User rates recall/relevance (easy/good/hard/again)",
+      "Schedule adapts based on ratings",
+      "Review history tracked in SQLite"
+    ],
+    "points": 5,
+    "priority": "high",
+    "status": "backlog",
+    "epic": "SG-EPIC-3",
+    "labels": ["ai", "engagement", "innovation"]
+  },
+  {
+    "id": "SG-12",
+    "title": "Life Balance Radar Chart",
+    "type": "story",
+    "description": "As a user, I want a Wheel of Life radar chart on my dashboard computed from actual tracked data across all domains so I can see my balance at a glance.",
+    "acceptanceCriteria": [
+      "Radar chart with spokes: Health, Habits, Skills, Learning, Goals, Finances, Journal/Mindfulness",
+      "Each spoke scored 0-100 from actual data (not subjective ratings)",
+      "Health: from health_metrics aggregation",
+      "Habits: from completion rate last 30 days",
+      "Skills: from current_level / target_level ratio",
+      "Learning: from active/completed learning items",
+      "Goals: from goal status distribution",
+      "Finances: from budget adherence (if set)",
+      "Journal: from entry frequency and mood trend",
+      "Uses Recharts (already installed)",
+      "Show 30-day overlay to visualize balance shifts"
+    ],
+    "points": 5,
+    "priority": "high",
+    "status": "backlog",
+    "epic": "SG-EPIC-4",
+    "labels": ["visualization", "dashboard"]
+  },
+  {
+    "id": "SG-13",
+    "title": "Mood-Habit Correlation View",
+    "type": "story",
+    "description": "As a user, I want to see which habits most strongly correlate with my positive mood days so I know what actually makes me feel better.",
+    "acceptanceCriteria": [
+      "Dedicated analytics page or section in Dashboard",
+      "Correlate habit completion with journal mood ratings",
+      "Show ranked list of habits by positive mood correlation",
+      "Scatter plot: habit completion days vs mood score",
+      "Requires minimum 14 days of data to show results",
+      "Updates weekly or on demand"
+    ],
+    "points": 5,
+    "priority": "medium",
+    "status": "backlog",
+    "epic": "SG-EPIC-4",
+    "labels": ["analytics", "visualization"]
+  },
+  {
+    "id": "SG-14",
+    "title": "Identity-Based Habit Framing",
+    "type": "story",
+    "description": "As a user, I want to attach an identity statement to each habit ('I'm becoming someone who reads daily') so my habits feel connected to who I want to be.",
+    "acceptanceCriteria": [
+      "Add identity_statement field to habits table",
+      "Habit creation form prompts: 'I'm becoming someone who...'",
+      "Identity statement displayed on habit cards",
+      "AI coach references identity statements when discussing habits",
+      "Optional — can be left blank"
+    ],
+    "points": 2,
+    "priority": "medium",
+    "status": "backlog",
+    "epic": "SG-EPIC-4",
+    "labels": ["ux", "behavioral-science", "low-effort"]
+  },
+  {
+    "id": "SG-15",
+    "title": "Harden CI Quality Gates",
+    "type": "story",
+    "description": "As a developer, I want cargo fmt, cargo test, and ESLint added to CI so formatting, Rust tests, and JS lint are enforced.",
+    "acceptanceCriteria": [
+      "CI runs cargo fmt -- --check",
+      "CI runs cargo test",
+      "CI runs ESLint (if configured) or add basic eslint config",
+      "All checks must pass for CI to be green",
+      "Pre-push hook updated to match CI checks"
+    ],
+    "points": 3,
+    "priority": "high",
+    "status": "backlog",
+    "epic": "SG-EPIC-5",
+    "labels": ["ci", "quality", "dx"]
+  },
+  {
+    "id": "SG-16",
+    "title": "Portable Git Hooks Setup Script",
+    "type": "story",
+    "description": "As a developer, I want a setup script that installs git hooks from a tracked directory so new clones automatically get quality gates.",
+    "acceptanceCriteria": [
+      "Create scripts/setup-hooks.sh",
+      "Store hook source files in .githooks/ (tracked in repo)",
+      "Script copies hooks to .git/hooks/ (or uses git config core.hooksPath)",
+      "Document in README and CLAUDE.md",
+      "Works for submodule setup (git/modules path)"
+    ],
+    "points": 2,
+    "priority": "high",
+    "status": "backlog",
+    "epic": "SG-EPIC-5",
+    "labels": ["dx", "low-effort"]
+  },
+  {
+    "id": "SG-17",
+    "title": "Code Splitting for Bundle Size",
+    "type": "story",
+    "description": "As a developer, I want lazy-loaded routes so the main JS bundle drops below 500KB.",
+    "acceptanceCriteria": [
+      "React.lazy + Suspense for page components",
+      "Main chunk under 500KB",
+      "Loading indicator during lazy load",
+      "No user-visible performance regression"
+    ],
+    "points": 3,
+    "priority": "medium",
+    "status": "backlog",
+    "epic": "SG-EPIC-5",
+    "labels": ["performance", "frontend"]
+  }
+]

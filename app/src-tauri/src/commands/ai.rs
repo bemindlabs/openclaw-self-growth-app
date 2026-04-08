@@ -1,13 +1,12 @@
-use tauri::State;
+use crate::commands::constants::{
+    CHAT_SYSTEM, COACH_SYSTEM, INSIGHTS_SYSTEM, LIMIT_CONTEXT_SKILLS, MAX_TOKENS_CHAT,
+    MAX_TOKENS_COACH, MAX_TOKENS_INSIGHTS, MAX_TOKENS_SUMMARIZE, SUMMARIZE_SYSTEM, TEMP_CHAT,
+    TEMP_COACH, TEMP_INSIGHTS, TEMP_SUMMARIZE,
+};
 use crate::db::DbState;
 use crate::gateway;
-use crate::models::{ChatMessageInput, AiResponse};
-use crate::commands::constants::{
-    COACH_SYSTEM, INSIGHTS_SYSTEM, SUMMARIZE_SYSTEM, CHAT_SYSTEM,
-    TEMP_COACH, TEMP_INSIGHTS, TEMP_SUMMARIZE, TEMP_CHAT,
-    MAX_TOKENS_COACH, MAX_TOKENS_INSIGHTS, MAX_TOKENS_SUMMARIZE, MAX_TOKENS_CHAT,
-    LIMIT_CONTEXT_SKILLS,
-};
+use crate::models::{AiResponse, ChatMessageInput};
+use tauri::State;
 
 #[tauri::command]
 pub async fn ai_coach(
@@ -20,7 +19,9 @@ pub async fn ai_coach(
 
     let q = question
         .filter(|s| !s.trim().is_empty())
-        .unwrap_or_else(|| "Based on my current progress, what should I focus on next?".to_string());
+        .unwrap_or_else(|| {
+            "Based on my current progress, what should I focus on next?".to_string()
+        });
 
     let user_prompt = format!("{q}\n\nMy current self-development context:\n{context_block}");
 
@@ -29,27 +30,48 @@ pub async fn ai_coach(
         serde_json::json!({"role": "user", "content": user_prompt}),
     ];
 
-    let (content, returned_model) = gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &messages, TEMP_COACH, MAX_TOKENS_COACH).await?;
-    Ok(AiResponse { content, model: returned_model })
+    let (content, returned_model) = gateway::chat_completion(
+        &endpoint,
+        &token,
+        gateway::LLM_MODEL,
+        &messages,
+        TEMP_COACH,
+        MAX_TOKENS_COACH,
+    )
+    .await?;
+    Ok(AiResponse {
+        content,
+        model: returned_model,
+    })
 }
 
 #[tauri::command]
-pub async fn ai_insights(
-    state: State<'_, DbState>,
-) -> Result<AiResponse, String> {
+pub async fn ai_insights(state: State<'_, DbState>) -> Result<AiResponse, String> {
     let (endpoint, token) = gateway::llm_config(&state)?;
     let context = build_context(&state)?;
     let context_block = gateway::format_context(&context);
 
-    let user_prompt = format!("Analyze my self-development data and provide insights:\n\n{context_block}");
+    let user_prompt =
+        format!("Analyze my self-development data and provide insights:\n\n{context_block}");
 
     let messages = vec![
         serde_json::json!({"role": "system", "content": INSIGHTS_SYSTEM}),
         serde_json::json!({"role": "user", "content": user_prompt}),
     ];
 
-    let (content, returned_model) = gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &messages, TEMP_INSIGHTS, MAX_TOKENS_INSIGHTS).await?;
-    Ok(AiResponse { content, model: returned_model })
+    let (content, returned_model) = gateway::chat_completion(
+        &endpoint,
+        &token,
+        gateway::LLM_MODEL,
+        &messages,
+        TEMP_INSIGHTS,
+        MAX_TOKENS_INSIGHTS,
+    )
+    .await?;
+    Ok(AiResponse {
+        content,
+        model: returned_model,
+    })
 }
 
 #[tauri::command]
@@ -62,15 +84,28 @@ pub async fn ai_summarize(
     let context_block = gateway::format_context(&context);
 
     let period = period.unwrap_or_else(|| "weekly".to_string());
-    let user_prompt = format!("Write a {period} progress summary based on my self-development data:\n\n{context_block}");
+    let user_prompt = format!(
+        "Write a {period} progress summary based on my self-development data:\n\n{context_block}"
+    );
 
     let messages = vec![
         serde_json::json!({"role": "system", "content": SUMMARIZE_SYSTEM}),
         serde_json::json!({"role": "user", "content": user_prompt}),
     ];
 
-    let (content, returned_model) = gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &messages, TEMP_SUMMARIZE, MAX_TOKENS_SUMMARIZE).await?;
-    Ok(AiResponse { content, model: returned_model })
+    let (content, returned_model) = gateway::chat_completion(
+        &endpoint,
+        &token,
+        gateway::LLM_MODEL,
+        &messages,
+        TEMP_SUMMARIZE,
+        MAX_TOKENS_SUMMARIZE,
+    )
+    .await?;
+    Ok(AiResponse {
+        content,
+        model: returned_model,
+    })
 }
 
 #[tauri::command]
@@ -93,8 +128,19 @@ pub async fn ai_chat(
         llm_messages.push(serde_json::json!({"role": msg.role, "content": msg.content}));
     }
 
-    let (content, returned_model) = gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &llm_messages, TEMP_CHAT, MAX_TOKENS_CHAT).await?;
-    Ok(AiResponse { content, model: returned_model })
+    let (content, returned_model) = gateway::chat_completion(
+        &endpoint,
+        &token,
+        gateway::LLM_MODEL,
+        &llm_messages,
+        TEMP_CHAT,
+        MAX_TOKENS_CHAT,
+    )
+    .await?;
+    Ok(AiResponse {
+        content,
+        model: returned_model,
+    })
 }
 
 fn build_context(state: &State<DbState>) -> Result<serde_json::Value, String> {

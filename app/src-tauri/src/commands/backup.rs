@@ -1,6 +1,6 @@
+use crate::db::DbState;
 use std::path::PathBuf;
 use tauri::{Manager, State};
-use crate::db::DbState;
 
 /// Get the path to the current database file.
 fn db_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
@@ -10,7 +10,11 @@ fn db_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
 
 /// Export (backup) the database to a given path.
 #[tauri::command]
-pub fn export_backup(app: tauri::AppHandle, state: State<DbState>, dest_path: String) -> Result<String, String> {
+pub fn export_backup(
+    app: tauri::AppHandle,
+    state: State<DbState>,
+    dest_path: String,
+) -> Result<String, String> {
     // Checkpoint WAL to ensure all data is in the main db file
     {
         let conn = state.0.lock().map_err(|e| e.to_string())?;
@@ -31,7 +35,11 @@ pub fn export_backup(app: tauri::AppHandle, state: State<DbState>, dest_path: St
 
 /// Import (restore) a database from a given path, replacing the current one.
 #[tauri::command]
-pub fn import_backup(app: tauri::AppHandle, state: State<DbState>, src_path: String) -> Result<(), String> {
+pub fn import_backup(
+    app: tauri::AppHandle,
+    state: State<DbState>,
+    src_path: String,
+) -> Result<(), String> {
     let src = PathBuf::from(&src_path);
     if !src.exists() {
         return Err("Backup file not found".to_string());
@@ -39,7 +47,8 @@ pub fn import_backup(app: tauri::AppHandle, state: State<DbState>, src_path: Str
 
     // Validate the backup is a valid SQLite database with our schema
     {
-        let conn = rusqlite::Connection::open(&src).map_err(|e| format!("Invalid backup file: {e}"))?;
+        let conn =
+            rusqlite::Connection::open(&src).map_err(|e| format!("Invalid backup file: {e}"))?;
         conn.query_row("SELECT COUNT(*) FROM settings", [], |_| Ok(()))
             .map_err(|_| "Invalid backup: not a Self Growth database".to_string())?;
     }

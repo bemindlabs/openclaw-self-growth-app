@@ -1,7 +1,7 @@
-use tauri::State;
 use crate::db::DbState;
 use crate::gateway;
-use crate::models::{HealthMetric, HealthSync, HealthSummary};
+use crate::models::{HealthMetric, HealthSummary, HealthSync};
+use tauri::State;
 
 // ---------------------------------------------------------------------------
 // Apple Health XML Import
@@ -48,12 +48,12 @@ pub async fn import_apple_health(
         conn.execute(
             "INSERT INTO health_syncs (source, sync_type) VALUES ('apple_health', 'full_import')",
             [],
-        ).map_err(|e| e.to_string())?;
+        )
+        .map_err(|e| e.to_string())?;
         conn.last_insert_rowid()
     };
 
-    let file = std::fs::File::open(&file_path)
-        .map_err(|e| format!("Failed to open file: {e}"))?;
+    let file = std::fs::File::open(&file_path).map_err(|e| format!("Failed to open file: {e}"))?;
     let buf_reader = BufReader::with_capacity(64 * 1024, file);
     let mut reader = Reader::from_reader(buf_reader);
     reader.config_mut().trim_text(true);
@@ -79,9 +79,15 @@ pub async fn import_apple_health(
                     for attr in e.attributes().flatten() {
                         match attr.key.as_ref() {
                             b"type" => hk_type = String::from_utf8_lossy(&attr.value).to_string(),
-                            b"value" => value_str = String::from_utf8_lossy(&attr.value).to_string(),
-                            b"startDate" => start_date = String::from_utf8_lossy(&attr.value).to_string(),
-                            b"endDate" => end_date = String::from_utf8_lossy(&attr.value).to_string(),
+                            b"value" => {
+                                value_str = String::from_utf8_lossy(&attr.value).to_string()
+                            }
+                            b"startDate" => {
+                                start_date = String::from_utf8_lossy(&attr.value).to_string()
+                            }
+                            b"endDate" => {
+                                end_date = String::from_utf8_lossy(&attr.value).to_string()
+                            }
                             _ => {}
                         }
                     }
@@ -90,11 +96,17 @@ pub async fn import_apple_health(
                     if hk_type == "HKCategoryTypeIdentifierSleepAnalysis" {
                         if let (Ok(start), Ok(end)) = (
                             chrono::NaiveDateTime::parse_from_str(
-                                start_date.rsplit_once(' ').map(|(d, _)| d).unwrap_or(&start_date),
+                                start_date
+                                    .rsplit_once(' ')
+                                    .map(|(d, _)| d)
+                                    .unwrap_or(&start_date),
                                 "%Y-%m-%d %H:%M:%S",
                             ),
                             chrono::NaiveDateTime::parse_from_str(
-                                end_date.rsplit_once(' ').map(|(d, _)| d).unwrap_or(&end_date),
+                                end_date
+                                    .rsplit_once(' ')
+                                    .map(|(d, _)| d)
+                                    .unwrap_or(&end_date),
                                 "%Y-%m-%d %H:%M:%S",
                             ),
                         ) {
@@ -115,7 +127,11 @@ pub async fn import_apple_health(
                     } else if let Some((metric_type, unit)) = map_apple_health_type(&hk_type) {
                         if let Ok(value) = value_str.parse::<f64>() {
                             let recorded = parse_apple_date(&start_date);
-                            let end_iso = if end_date.is_empty() { None } else { Some(parse_apple_date(&end_date)) };
+                            let end_iso = if end_date.is_empty() {
+                                None
+                            } else {
+                                Some(parse_apple_date(&end_date))
+                            };
                             batch.push((
                                 metric_type.to_string(),
                                 unit.to_string(),
@@ -134,22 +150,35 @@ pub async fn import_apple_health(
 
                     for attr in e.attributes().flatten() {
                         match attr.key.as_ref() {
-                            b"workoutActivityType" => activity_type = String::from_utf8_lossy(&attr.value).to_string(),
-                            b"duration" => duration_str = String::from_utf8_lossy(&attr.value).to_string(),
-                            b"startDate" => start_date = String::from_utf8_lossy(&attr.value).to_string(),
-                            b"endDate" => end_date = String::from_utf8_lossy(&attr.value).to_string(),
+                            b"workoutActivityType" => {
+                                activity_type = String::from_utf8_lossy(&attr.value).to_string()
+                            }
+                            b"duration" => {
+                                duration_str = String::from_utf8_lossy(&attr.value).to_string()
+                            }
+                            b"startDate" => {
+                                start_date = String::from_utf8_lossy(&attr.value).to_string()
+                            }
+                            b"endDate" => {
+                                end_date = String::from_utf8_lossy(&attr.value).to_string()
+                            }
                             _ => {}
                         }
                     }
 
                     if let Ok(duration) = duration_str.parse::<f64>() {
                         let recorded = parse_apple_date(&start_date);
-                        let end_iso = if end_date.is_empty() { None } else { Some(parse_apple_date(&end_date)) };
+                        let end_iso = if end_date.is_empty() {
+                            None
+                        } else {
+                            Some(parse_apple_date(&end_date))
+                        };
                         let workout_name = activity_type
                             .strip_prefix("HKWorkoutActivityType")
                             .unwrap_or(&activity_type)
                             .to_string();
-                        let metadata = serde_json::json!({ "workout_type": workout_name }).to_string();
+                        let metadata =
+                            serde_json::json!({ "workout_type": workout_name }).to_string();
                         batch.push((
                             "workout".to_string(),
                             "min".to_string(),
@@ -209,10 +238,7 @@ pub async fn import_apple_health(
 type BatchRow = (String, String, f64, String, Option<String>, Option<String>);
 
 #[allow(clippy::type_complexity)]
-fn flush_batch(
-    state: &State<DbState>,
-    batch: &[BatchRow],
-) -> Result<i64, String> {
+fn flush_batch(state: &State<DbState>, batch: &[BatchRow]) -> Result<i64, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     let tx = conn.unchecked_transaction().map_err(|e| e.to_string())?;
     let mut count = 0i64;
@@ -386,15 +412,15 @@ pub async fn sync_google_fit(
         conn.execute(
             "INSERT INTO health_syncs (source, sync_type) VALUES ('google_fit', 'incremental')",
             [],
-        ).map_err(|e| e.to_string())?;
+        )
+        .map_err(|e| e.to_string())?;
         conn.last_insert_rowid()
     };
 
     // Get or refresh access token
     let access_token = {
         let conn = state.0.lock().map_err(|e| e.to_string())?;
-        gateway::get_setting(&conn, "gfit_access_token")
-            .filter(|t| !t.is_empty())
+        gateway::get_setting(&conn, "gfit_access_token").filter(|t| !t.is_empty())
     };
 
     let token = match access_token {
@@ -504,9 +530,7 @@ fn process_google_fit_response(
 
             if let Some(datasets) = bucket["dataset"].as_array() {
                 for dataset in datasets {
-                    let data_type = dataset["dataSourceId"]
-                        .as_str()
-                        .unwrap_or("");
+                    let data_type = dataset["dataSourceId"].as_str().unwrap_or("");
 
                     // Extract the data type name from the dataSourceId
                     let type_name = data_type
@@ -556,7 +580,11 @@ fn process_google_fit_response(
     Ok(count)
 }
 
-fn finalize_sync(state: &State<DbState>, sync_id: i64, records_added: i64) -> Result<HealthSync, String> {
+fn finalize_sync(
+    state: &State<DbState>,
+    sync_id: i64,
+    records_added: i64,
+) -> Result<HealthSync, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     conn.execute(
         "UPDATE health_syncs SET status = 'completed', records_added = ?1, completed_at = datetime('now') WHERE id = ?2",
@@ -641,9 +669,7 @@ pub fn get_health_summary(state: State<DbState>) -> Result<Vec<HealthSummary>, S
     let conn = state.0.lock().map_err(|e| e.to_string())?;
 
     let mut stmt = conn
-        .prepare(
-            "SELECT DISTINCT metric_type FROM health_metrics ORDER BY metric_type"
-        )
+        .prepare("SELECT DISTINCT metric_type FROM health_metrics ORDER BY metric_type")
         .map_err(|e| e.to_string())?;
 
     let metric_types: Vec<String> = stmt

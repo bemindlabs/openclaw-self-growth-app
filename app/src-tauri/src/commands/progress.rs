@@ -1,9 +1,13 @@
-use tauri::State;
 use crate::db::DbState;
 use crate::models::{CreateProgressEntry, DashboardStats, ProgressEntry};
+use tauri::State;
 
 #[tauri::command]
-pub fn list_progress(state: State<DbState>, skill_id: Option<i64>, limit: Option<i64>) -> Result<Vec<ProgressEntry>, String> {
+pub fn list_progress(
+    state: State<DbState>,
+    skill_id: Option<i64>,
+    limit: Option<i64>,
+) -> Result<Vec<ProgressEntry>, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     let limit = limit.unwrap_or(50);
 
@@ -40,7 +44,10 @@ pub fn list_progress(state: State<DbState>, skill_id: Option<i64>, limit: Option
 }
 
 #[tauri::command]
-pub fn create_progress_entry(state: State<DbState>, data: CreateProgressEntry) -> Result<ProgressEntry, String> {
+pub fn create_progress_entry(
+    state: State<DbState>,
+    data: CreateProgressEntry,
+) -> Result<ProgressEntry, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     conn.execute(
         "INSERT INTO progress_entries (skill_id, learning_item_id, entry_type, value, notes) VALUES (?1, ?2, ?3, ?4, ?5)",
@@ -80,11 +87,19 @@ pub fn get_dashboard_stats(state: State<DbState>) -> Result<DashboardStats, Stri
         .map_err(|e| e.to_string())?;
 
     let active_routines: i64 = conn
-        .query_row("SELECT COUNT(*) FROM routines WHERE is_active = 1", [], |row| row.get(0))
+        .query_row(
+            "SELECT COUNT(*) FROM routines WHERE is_active = 1",
+            [],
+            |row| row.get(0),
+        )
         .map_err(|e| e.to_string())?;
 
     let active_goals: i64 = conn
-        .query_row("SELECT COUNT(*) FROM goals WHERE status = 'active'", [], |row| row.get(0))
+        .query_row(
+            "SELECT COUNT(*) FROM goals WHERE status = 'active'",
+            [],
+            |row| row.get(0),
+        )
         .map_err(|e| e.to_string())?;
 
     let completions_today: i64 = conn

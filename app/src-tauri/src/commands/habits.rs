@@ -1,6 +1,6 @@
-use tauri::State;
 use crate::db::DbState;
-use crate::models::{Habit, CreateHabit, HabitLog};
+use crate::models::{CreateHabit, Habit, HabitLog};
+use tauri::State;
 
 #[tauri::command]
 pub fn list_habits(state: State<DbState>) -> Result<Vec<Habit>, String> {
@@ -72,19 +72,39 @@ pub fn update_habit(
     let conn = state.0.lock().map_err(|e| e.to_string())?;
 
     if let Some(v) = name {
-        conn.execute("UPDATE habits SET name = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE habits SET name = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(v) = description {
-        conn.execute("UPDATE habits SET description = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE habits SET description = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(v) = frequency {
-        conn.execute("UPDATE habits SET frequency = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE habits SET frequency = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(v) = color {
-        conn.execute("UPDATE habits SET color = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE habits SET color = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(v) = is_active {
-        conn.execute("UPDATE habits SET is_active = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE habits SET is_active = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
 
     conn.query_row(
@@ -108,7 +128,8 @@ pub fn update_habit(
 #[tauri::command]
 pub fn delete_habit(state: State<DbState>, id: i64) -> Result<(), String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
-    conn.execute("DELETE FROM habits WHERE id = ?1", [id]).map_err(|e| e.to_string())?;
+    conn.execute("DELETE FROM habits WHERE id = ?1", [id])
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -139,7 +160,11 @@ pub fn toggle_habit(state: State<DbState>, habit_id: i64, date: String) -> Resul
 }
 
 #[tauri::command]
-pub fn get_habit_logs(state: State<DbState>, habit_id: i64, days: Option<i64>) -> Result<Vec<HabitLog>, String> {
+pub fn get_habit_logs(
+    state: State<DbState>,
+    habit_id: i64,
+    days: Option<i64>,
+) -> Result<Vec<HabitLog>, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     let days = days.unwrap_or(30);
     let interval = format!("-{} days", days);

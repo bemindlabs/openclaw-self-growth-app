@@ -1,7 +1,7 @@
+use crate::db::DbState;
+use crate::models::{CreateLedgerEntry, LedgerEntry, LedgerSummary};
 use rusqlite::Connection;
 use tauri::State;
-use crate::db::DbState;
-use crate::models::{LedgerEntry, CreateLedgerEntry, LedgerSummary};
 
 const DEFAULT_CURRENCY: &str = "THB";
 
@@ -17,7 +17,11 @@ fn get_default_currency(conn: &Connection) -> String {
 }
 
 #[tauri::command]
-pub fn list_ledger_entries(state: State<DbState>, category: Option<String>, limit: Option<i64>) -> Result<Vec<LedgerEntry>, String> {
+pub fn list_ledger_entries(
+    state: State<DbState>,
+    category: Option<String>,
+    limit: Option<i64>,
+) -> Result<Vec<LedgerEntry>, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     let limit = limit.unwrap_or(100);
 
@@ -56,14 +60,17 @@ pub fn list_ledger_entries(state: State<DbState>, category: Option<String>, limi
 }
 
 #[tauri::command]
-pub fn create_ledger_entry(state: State<DbState>, data: CreateLedgerEntry) -> Result<LedgerEntry, String> {
+pub fn create_ledger_entry(
+    state: State<DbState>,
+    data: CreateLedgerEntry,
+) -> Result<LedgerEntry, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     let currency = data.currency.unwrap_or_else(|| get_default_currency(&conn));
     let entry_type = data.entry_type.unwrap_or_else(|| "expense".to_string());
     let category = data.category.unwrap_or_else(|| "general".to_string());
-    let entry_date = data.entry_date.unwrap_or_else(|| {
-        chrono::Local::now().format("%Y-%m-%d").to_string()
-    });
+    let entry_date = data
+        .entry_date
+        .unwrap_or_else(|| chrono::Local::now().format("%Y-%m-%d").to_string());
 
     conn.execute(
         "INSERT INTO ledger_entries (title, amount, currency, entry_type, category, description, entry_date) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
@@ -97,13 +104,55 @@ pub fn update_ledger_entry(
 ) -> Result<LedgerEntry, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
 
-    if let Some(v) = title { conn.execute("UPDATE ledger_entries SET title = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?; }
-    if let Some(v) = amount { conn.execute("UPDATE ledger_entries SET amount = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?; }
-    if let Some(v) = currency { conn.execute("UPDATE ledger_entries SET currency = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?; }
-    if let Some(v) = entry_type { conn.execute("UPDATE ledger_entries SET entry_type = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?; }
-    if let Some(v) = category { conn.execute("UPDATE ledger_entries SET category = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?; }
-    if let Some(v) = description { conn.execute("UPDATE ledger_entries SET description = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?; }
-    if let Some(v) = entry_date { conn.execute("UPDATE ledger_entries SET entry_date = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?; }
+    if let Some(v) = title {
+        conn.execute(
+            "UPDATE ledger_entries SET title = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = amount {
+        conn.execute(
+            "UPDATE ledger_entries SET amount = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = currency {
+        conn.execute(
+            "UPDATE ledger_entries SET currency = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = entry_type {
+        conn.execute(
+            "UPDATE ledger_entries SET entry_type = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = category {
+        conn.execute(
+            "UPDATE ledger_entries SET category = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = description {
+        conn.execute(
+            "UPDATE ledger_entries SET description = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = entry_date {
+        conn.execute(
+            "UPDATE ledger_entries SET entry_date = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
 
     conn.query_row(
         "SELECT id, title, amount, currency, entry_type, category, description, entry_date, created_at FROM ledger_entries WHERE id = ?1",
@@ -119,12 +168,16 @@ pub fn update_ledger_entry(
 #[tauri::command]
 pub fn delete_ledger_entry(state: State<DbState>, id: i64) -> Result<(), String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
-    conn.execute("DELETE FROM ledger_entries WHERE id = ?1", [id]).map_err(|e| e.to_string())?;
+    conn.execute("DELETE FROM ledger_entries WHERE id = ?1", [id])
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 
 #[tauri::command]
-pub fn get_ledger_summary(state: State<DbState>, period: Option<String>) -> Result<LedgerSummary, String> {
+pub fn get_ledger_summary(
+    state: State<DbState>,
+    period: Option<String>,
+) -> Result<LedgerSummary, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     let days = match period.as_deref() {
         Some("week") => 7,

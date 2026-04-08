@@ -1,7 +1,7 @@
-use std::path::Path;
-use tauri::State;
 use crate::db::DbState;
 use crate::gateway;
+use std::path::Path;
+use tauri::State;
 
 const OCR_SYSTEM: &str = "You are an OCR assistant. Extract all text from the provided image accurately. Preserve the structure — use markdown tables for tabular data, bullet points for lists, and headings for sections. For medical/lab results, extract each metric with its value, unit, and reference range if visible. Be thorough and precise.";
 
@@ -55,7 +55,9 @@ pub async fn ocr_extract(
         }),
     ];
 
-    let (content, _) = gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &messages, 0.1, 2000).await?;
+    let (content, _) =
+        gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &messages, 0.1, 2000)
+            .await?;
     Ok(content)
 }
 

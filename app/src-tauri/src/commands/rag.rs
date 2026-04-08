@@ -1,6 +1,6 @@
-use tauri::State;
 use crate::db::DbState;
 use crate::models::SearchResult;
+use tauri::State;
 
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
 use crate::embedder::EmbedderState;
@@ -19,9 +19,7 @@ pub fn semantic_search(
 ) -> Result<Vec<SearchResult>, String> {
     let limit = limit.unwrap_or(10);
 
-    let query_embedding = embedder_state
-        .embed(&query)
-        .map_err(|e| e.to_string())?;
+    let query_embedding = embedder_state.embed(&query).map_err(|e| e.to_string())?;
 
     search_with_embedding(&db_state, &query_embedding, limit)
 }
@@ -32,7 +30,7 @@ pub fn rebuild_embeddings(
     db_state: State<DbState>,
     embedder_state: State<EmbedderState>,
 ) -> Result<u32, String> {
-    use sha2::{Sha256, Digest};
+    use sha2::{Digest, Sha256};
 
     let conn = db_state.0.lock().map_err(|e| e.to_string())?;
     let mut count = 0u32;
@@ -46,7 +44,10 @@ pub fn rebuild_embeddings(
             .collect();
 
         for (id, text) in &items {
-            let hash = format!("{:x}", Sha256::new().chain_update(text.as_bytes()).finalize());
+            let hash = format!(
+                "{:x}",
+                Sha256::new().chain_update(text.as_bytes()).finalize()
+            );
             if !embedding_exists(&conn, table, *id, &hash) {
                 let emb = embedder_state.embed(text).map_err(|e| e.to_string())?;
                 upsert_embedding(&conn, table, *id, &hash, &emb).map_err(|e| e.to_string())?;
@@ -91,16 +92,17 @@ pub async fn semantic_search(
         .join("\n");
 
     let system = "You are a search ranking system. Given a query and a numbered list of items, return ONLY the numbers of the most relevant items in order of relevance, separated by commas. Return at most the requested number of results. If nothing is relevant, return \"none\". Do not explain.";
-    let user_prompt = format!(
-        "Query: {query}\nReturn top {limit} relevant items.\n\nItems:\n{item_list}"
-    );
+    let user_prompt =
+        format!("Query: {query}\nReturn top {limit} relevant items.\n\nItems:\n{item_list}");
 
     let messages = vec![
         serde_json::json!({"role": "system", "content": system}),
         serde_json::json!({"role": "user", "content": user_prompt}),
     ];
 
-    let (response, _) = gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &messages, 0.0, 100).await?;
+    let (response, _) =
+        gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &messages, 0.0, 100)
+            .await?;
 
     // Parse the LLM response — extract numbers
     let indices: Vec<usize> = response
@@ -133,9 +135,7 @@ pub async fn semantic_search(
 
 #[cfg(any(target_os = "ios", target_os = "android"))]
 #[tauri::command]
-pub async fn rebuild_embeddings(
-    _db_state: State<'_, DbState>,
-) -> Result<u32, String> {
+pub async fn rebuild_embeddings(_db_state: State<'_, DbState>) -> Result<u32, String> {
     // Mobile uses LLM-based ranking at search time — no pre-built index needed
     Ok(0)
 }
@@ -179,7 +179,11 @@ fn collect_all_items(conn: &rusqlite::Connection) -> Result<Vec<(String, i64, St
     Ok(items)
 }
 
-fn search_with_embedding(db_state: &State<DbState>, query_embedding: &[f32], limit: usize) -> Result<Vec<SearchResult>, String> {
+fn search_with_embedding(
+    db_state: &State<DbState>,
+    query_embedding: &[f32],
+    limit: usize,
+) -> Result<Vec<SearchResult>, String> {
     let conn = db_state.0.lock().map_err(|e| e.to_string())?;
     let mut stmt = conn
         .prepare("SELECT id, source_table, source_id, embedding FROM embeddings")
@@ -262,7 +266,11 @@ fn upsert_embedding(
     Ok(())
 }
 
-fn fetch_source_info(conn: &rusqlite::Connection, table: &str, id: i64) -> (String, Option<String>) {
+fn fetch_source_info(
+    conn: &rusqlite::Connection,
+    table: &str,
+    id: i64,
+) -> (String, Option<String>) {
     match table {
         "skills" => conn
             .query_row("SELECT name, category FROM skills WHERE id = ?1", [id], |row| {

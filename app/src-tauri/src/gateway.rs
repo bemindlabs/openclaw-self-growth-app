@@ -3,11 +3,9 @@ use tauri::State;
 
 /// Read a single setting from the database, returning None if not found.
 pub fn get_setting(conn: &rusqlite::Connection, key: &str) -> Option<String> {
-    conn.query_row(
-        "SELECT value FROM settings WHERE key = ?1",
-        [key],
-        |row| row.get(0),
-    )
+    conn.query_row("SELECT value FROM settings WHERE key = ?1", [key], |row| {
+        row.get(0)
+    })
     .ok()
 }
 
@@ -91,31 +89,33 @@ pub async fn chat_completion(
 
 /// Format context data into a readable text block for LLM prompts.
 pub fn format_context(context: &serde_json::Value) -> String {
-    let sections: Vec<String> = ["skills", "routines", "goals", "learning", "streaks", "health", "checkups", "todos"]
-        .iter()
-        .filter_map(|key| {
-            let items = context.get(key)?.as_array()?;
-            if items.is_empty() {
-                return None;
-            }
-            let label = match *key {
-                "skills" => "Skills",
-                "routines" => "Routines",
-                "goals" => "Goals",
-                "learning" => "Learning",
-                "streaks" => "Streaks",
-                "health" => "Health (7-day avg)",
-                "checkups" => "Recent Health Checkups",
-                "todos" => "Pending Todos",
-                _ => key,
-            };
-            let lines: Vec<String> = items
-                .iter()
-                .filter_map(|v| v.as_str().map(|s| format!("  - {s}")))
-                .collect();
-            Some(format!("{label}:\n{}", lines.join("\n")))
-        })
-        .collect();
+    let sections: Vec<String> = [
+        "skills", "routines", "goals", "learning", "streaks", "health", "checkups", "todos",
+    ]
+    .iter()
+    .filter_map(|key| {
+        let items = context.get(key)?.as_array()?;
+        if items.is_empty() {
+            return None;
+        }
+        let label = match *key {
+            "skills" => "Skills",
+            "routines" => "Routines",
+            "goals" => "Goals",
+            "learning" => "Learning",
+            "streaks" => "Streaks",
+            "health" => "Health (7-day avg)",
+            "checkups" => "Recent Health Checkups",
+            "todos" => "Pending Todos",
+            _ => key,
+        };
+        let lines: Vec<String> = items
+            .iter()
+            .filter_map(|v| v.as_str().map(|s| format!("  - {s}")))
+            .collect();
+        Some(format!("{label}:\n{}", lines.join("\n")))
+    })
+    .collect();
 
     if sections.is_empty() {
         "No context available.".to_string()
@@ -149,10 +149,8 @@ mod tests {
 
     fn setup_test_db() -> rusqlite::Connection {
         let conn = rusqlite::Connection::open_in_memory().unwrap();
-        conn.execute_batch(
-            "CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);",
-        )
-        .unwrap();
+        conn.execute_batch("CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);")
+            .unwrap();
         conn
     }
 
@@ -248,7 +246,9 @@ mod tests {
         let conn = setup_test_db();
         let result = get_required_setting(&conn, "llm_endpoint");
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("Missing 'llm_endpoint' setting"));
+        assert!(result
+            .unwrap_err()
+            .contains("Missing 'llm_endpoint' setting"));
     }
 
     #[test]
@@ -261,7 +261,9 @@ mod tests {
         .unwrap();
         let result = get_required_setting(&conn, "llm_endpoint");
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("Missing 'llm_endpoint' setting"));
+        assert!(result
+            .unwrap_err()
+            .contains("Missing 'llm_endpoint' setting"));
     }
 
     #[test]

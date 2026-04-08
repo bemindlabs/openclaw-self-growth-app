@@ -1,16 +1,14 @@
-use serde::Serialize;
-use tauri::State;
 use crate::db::DbState;
 use crate::gateway;
+use serde::Serialize;
+use tauri::State;
 
 #[tauri::command]
 pub fn get_app_setting(state: State<DbState>, key: String) -> Result<Option<String>, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
-    let result = conn.query_row(
-        "SELECT value FROM settings WHERE key = ?1",
-        [&key],
-        |row| row.get::<_, String>(0),
-    );
+    let result = conn.query_row("SELECT value FROM settings WHERE key = ?1", [&key], |row| {
+        row.get::<_, String>(0)
+    });
 
     match result {
         Ok(value) => Ok(Some(value)),
@@ -33,11 +31,14 @@ pub fn set_app_setting(state: State<DbState>, key: String, value: String) -> Res
 #[tauri::command]
 pub fn get_all_app_settings(state: State<DbState>) -> Result<Vec<(String, String)>, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
-    let mut stmt = conn.prepare("SELECT key, value FROM settings ORDER BY key")
+    let mut stmt = conn
+        .prepare("SELECT key, value FROM settings ORDER BY key")
         .map_err(|e| e.to_string())?;
 
     let settings = stmt
-        .query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)))
+        .query_map([], |row| {
+            Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+        })
         .map_err(|e| e.to_string())?
         .collect::<Result<Vec<_>, _>>()
         .map_err(|e| e.to_string())?;
@@ -62,7 +63,9 @@ pub struct ConnectionTestResult {
 }
 
 #[tauri::command]
-pub async fn test_ai_gateway_connection(state: State<'_, DbState>) -> Result<ConnectionTestResult, String> {
+pub async fn test_ai_gateway_connection(
+    state: State<'_, DbState>,
+) -> Result<ConnectionTestResult, String> {
     let (endpoint, token) = gateway::llm_config(&state)?;
     let url = format!("{endpoint}/models");
 
@@ -80,7 +83,11 @@ pub async fn test_ai_gateway_connection(state: State<'_, DbState>) -> Result<Con
             let models: Vec<String> = data
                 .get("data")
                 .and_then(|v| v.as_array())
-                .map(|arr| arr.iter().filter_map(|m| m.get("id").and_then(|v| v.as_str()).map(String::from)).collect())
+                .map(|arr| {
+                    arr.iter()
+                        .filter_map(|m| m.get("id").and_then(|v| v.as_str()).map(String::from))
+                        .collect()
+                })
                 .unwrap_or_default();
 
             Ok(ConnectionTestResult {
@@ -91,11 +98,15 @@ pub async fn test_ai_gateway_connection(state: State<'_, DbState>) -> Result<Con
             })
         }
         Ok(resp) => Ok(ConnectionTestResult {
-            ok: false, llm_endpoint: None, available_models: None,
+            ok: false,
+            llm_endpoint: None,
+            available_models: None,
             error: Some(format!("Server returned {}", resp.status())),
         }),
         Err(e) => Ok(ConnectionTestResult {
-            ok: false, llm_endpoint: None, available_models: None,
+            ok: false,
+            llm_endpoint: None,
+            available_models: None,
             error: Some(format!("Connection failed: {e}")),
         }),
     }

@@ -2,7 +2,7 @@ use tauri::State;
 
 use crate::db::DbState;
 use crate::gateway;
-use crate::models::{GenerateStoryInput, StoryGenerationResult, SaveStoryInput, Story};
+use crate::models::{GenerateStoryInput, SaveStoryInput, Story, StoryGenerationResult};
 
 const STORY_SYSTEM: &str = "You write vivid, emotionally clear stories that stay grounded in provided context. Use the context as inspiration and factual anchors, but do not invent claims about the user's saved data that are not supported. If context is thin, keep the story more universal than specific.";
 
@@ -105,7 +105,9 @@ pub async fn generate_story(
         serde_json::json!({"role": "user", "content": user_prompt}),
     ];
 
-    let (story, returned_model) = gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &messages, 0.9, 700).await?;
+    let (story, returned_model) =
+        gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &messages, 0.9, 700)
+            .await?;
 
     Ok(StoryGenerationResult {
         story,
@@ -138,17 +140,29 @@ pub fn list_stories(state: State<DbState>) -> Result<Vec<Story>, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     let mut stmt = conn.prepare("SELECT id, prompt, tone, story, model, provider, context_summary, created_at FROM stories ORDER BY created_at DESC")
         .map_err(|e| e.to_string())?;
-    let stories = stmt.query_map([], |row| Ok(Story {
-        id: row.get(0)?, prompt: row.get(1)?, tone: row.get(2)?, story: row.get(3)?,
-        model: row.get(4)?, provider: row.get(5)?, context_summary: row.get(6)?, created_at: row.get(7)?,
-    })).map_err(|e| e.to_string())?
-    .collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())?;
+    let stories = stmt
+        .query_map([], |row| {
+            Ok(Story {
+                id: row.get(0)?,
+                prompt: row.get(1)?,
+                tone: row.get(2)?,
+                story: row.get(3)?,
+                model: row.get(4)?,
+                provider: row.get(5)?,
+                context_summary: row.get(6)?,
+                created_at: row.get(7)?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
     Ok(stories)
 }
 
 #[tauri::command]
 pub fn delete_story(state: State<DbState>, id: i64) -> Result<(), String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
-    conn.execute("DELETE FROM stories WHERE id = ?1", [id]).map_err(|e| e.to_string())?;
+    conn.execute("DELETE FROM stories WHERE id = ?1", [id])
+        .map_err(|e| e.to_string())?;
     Ok(())
 }

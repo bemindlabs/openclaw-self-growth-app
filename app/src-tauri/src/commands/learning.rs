@@ -1,9 +1,12 @@
-use tauri::State;
 use crate::db::DbState;
 use crate::models::{CreateLearningItem, LearningItem};
+use tauri::State;
 
 #[tauri::command]
-pub fn list_learning_items(state: State<DbState>, status: Option<String>) -> Result<Vec<LearningItem>, String> {
+pub fn list_learning_items(
+    state: State<DbState>,
+    status: Option<String>,
+) -> Result<Vec<LearningItem>, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     let query = match status {
         Some(ref s) => format!(
@@ -36,7 +39,10 @@ pub fn list_learning_items(state: State<DbState>, status: Option<String>) -> Res
 }
 
 #[tauri::command]
-pub fn create_learning_item(state: State<DbState>, data: CreateLearningItem) -> Result<LearningItem, String> {
+pub fn create_learning_item(
+    state: State<DbState>,
+    data: CreateLearningItem,
+) -> Result<LearningItem, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     conn.execute(
         "INSERT INTO learning_items (title, description, item_type, source_url, skill_id) VALUES (?1, ?2, ?3, ?4, ?5)",
@@ -78,22 +84,46 @@ pub fn update_learning_item(
     let conn = state.0.lock().map_err(|e| e.to_string())?;
 
     if let Some(v) = title {
-        conn.execute("UPDATE learning_items SET title = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE learning_items SET title = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(v) = description {
-        conn.execute("UPDATE learning_items SET description = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE learning_items SET description = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(ref v) = status {
-        conn.execute("UPDATE learning_items SET status = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE learning_items SET status = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
         if v == "completed" {
-            conn.execute("UPDATE learning_items SET completed_at = datetime('now') WHERE id = ?1", [id]).map_err(|e| e.to_string())?;
+            conn.execute(
+                "UPDATE learning_items SET completed_at = datetime('now') WHERE id = ?1",
+                [id],
+            )
+            .map_err(|e| e.to_string())?;
         }
     }
     if let Some(v) = source_url {
-        conn.execute("UPDATE learning_items SET source_url = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE learning_items SET source_url = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(v) = skill_id {
-        conn.execute("UPDATE learning_items SET skill_id = ?1 WHERE id = ?2", rusqlite::params![v, id]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE learning_items SET skill_id = ?1 WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
 
     conn.query_row(
@@ -119,6 +149,7 @@ pub fn update_learning_item(
 #[tauri::command]
 pub fn delete_learning_item(state: State<DbState>, id: i64) -> Result<(), String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
-    conn.execute("DELETE FROM learning_items WHERE id = ?1", [id]).map_err(|e| e.to_string())?;
+    conn.execute("DELETE FROM learning_items WHERE id = ?1", [id])
+        .map_err(|e| e.to_string())?;
     Ok(())
 }

@@ -1,6 +1,6 @@
-use tauri::State;
 use crate::db::DbState;
 use crate::models::{CreateSkill, Skill};
+use tauri::State;
 
 #[tauri::command]
 pub fn list_skills(state: State<DbState>) -> Result<Vec<Skill>, String> {
@@ -74,20 +74,32 @@ pub fn update_skill(
     let conn = state.0.lock().map_err(|e| e.to_string())?;
 
     if let Some(v) = name {
-        conn.execute("UPDATE skills SET name = ?1, updated_at = datetime('now') WHERE id = ?2", rusqlite::params![v, id])
-            .map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE skills SET name = ?1, updated_at = datetime('now') WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(v) = category {
-        conn.execute("UPDATE skills SET category = ?1, updated_at = datetime('now') WHERE id = ?2", rusqlite::params![v, id])
-            .map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE skills SET category = ?1, updated_at = datetime('now') WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(v) = target_level {
-        conn.execute("UPDATE skills SET target_level = ?1, updated_at = datetime('now') WHERE id = ?2", rusqlite::params![v, id])
-            .map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE skills SET target_level = ?1, updated_at = datetime('now') WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
     if let Some(v) = current_level {
-        conn.execute("UPDATE skills SET current_level = ?1, updated_at = datetime('now') WHERE id = ?2", rusqlite::params![v, id])
-            .map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE skills SET current_level = ?1, updated_at = datetime('now') WHERE id = ?2",
+            rusqlite::params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
     }
 
     conn.query_row(

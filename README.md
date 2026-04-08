@@ -41,6 +41,9 @@ AI-powered personal development desktop app built with Tauri v2, React 19, and R
 # Install dependencies
 pnpm install
 
+# Install git hooks (one-time setup)
+sh scripts/setup-hooks.sh
+
 # Development mode with hot reload
 pnpm tauri dev
 

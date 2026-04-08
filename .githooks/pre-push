@@ -1,0 +1,17 @@
+#!/bin/sh
+# Pre-push hook: full quality gate
+set -e
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT/app"
+echo "pre-push: type checking..."
+npx tsc --noEmit
+echo "pre-push: running tests..."
+pnpm test
+echo "pre-push: building frontend..."
+pnpm build
+echo "pre-push: cargo fmt check..."
+cd "$ROOT/app/src-tauri"
+cargo fmt -- --check
+echo "pre-push: cargo check..."
+cargo check
+echo "pre-push: all checks passed"

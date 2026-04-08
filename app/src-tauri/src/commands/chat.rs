@@ -1,6 +1,6 @@
-use tauri::State;
 use crate::db::DbState;
 use crate::models::{ChatConversation, ChatMessageRecord};
+use tauri::State;
 
 #[tauri::command]
 pub fn list_conversations(state: State<'_, DbState>) -> Result<Vec<ChatConversation>, String> {
@@ -22,19 +22,20 @@ pub fn list_conversations(state: State<'_, DbState>) -> Result<Vec<ChatConversat
         })
         .map_err(|e| e.to_string())?;
 
-    rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+    rows.collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-pub fn create_conversation(state: State<'_, DbState>, title: Option<String>) -> Result<ChatConversation, String> {
+pub fn create_conversation(
+    state: State<'_, DbState>,
+    title: Option<String>,
+) -> Result<ChatConversation, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     let t = title.unwrap_or_else(|| "New Chat".to_string());
 
-    conn.execute(
-        "INSERT INTO chat_conversations (title) VALUES (?1)",
-        [&t],
-    )
-    .map_err(|e| e.to_string())?;
+    conn.execute("INSERT INTO chat_conversations (title) VALUES (?1)", [&t])
+        .map_err(|e| e.to_string())?;
 
     let id = conn.last_insert_rowid();
     conn.query_row(
@@ -53,7 +54,11 @@ pub fn create_conversation(state: State<'_, DbState>, title: Option<String>) -> 
 }
 
 #[tauri::command]
-pub fn rename_conversation(state: State<'_, DbState>, id: i64, title: String) -> Result<(), String> {
+pub fn rename_conversation(
+    state: State<'_, DbState>,
+    id: i64,
+    title: String,
+) -> Result<(), String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     conn.execute(
         "UPDATE chat_conversations SET title = ?1, updated_at = datetime('now') WHERE id = ?2",
@@ -95,7 +100,8 @@ pub fn get_conversation_messages(
         })
         .map_err(|e| e.to_string())?;
 
-    rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+    rows.collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]

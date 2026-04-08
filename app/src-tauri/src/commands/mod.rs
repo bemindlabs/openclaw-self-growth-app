@@ -1,16 +1,16 @@
 pub mod ai;
 pub mod backup;
-#[allow(dead_code)]
-pub mod constants;
 pub mod chat;
 pub mod checkups;
+#[allow(dead_code)]
+pub mod constants;
 pub mod goals;
 pub mod habits;
 pub mod health;
 pub mod journal;
+pub mod learning;
 pub mod ledger;
 pub mod ocr;
-pub mod learning;
 pub mod progress;
 pub mod rag;
 pub mod routines;

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "SG-EPIC-1",
+    "title": "Intelligent AI Layer",
+    "description": "Make AI proactive, context-aware, and cross-domain. Move from reactive chatbot to predictive coach.",
+    "status": "planned",
+    "priority": "critical",
+    "stories": ["SG-1", "SG-2", "SG-3", "SG-4", "SG-10"]
+  },
+  {
+    "id": "SG-EPIC-2",
+    "title": "Cross-Domain Connections",
+    "description": "Link goals to habits to todos to health to finances. Break feature silos.",
+    "status": "planned",
+    "priority": "high",
+    "stories": ["SG-5", "SG-6", "SG-7"]
+  },
+  {
+    "id": "SG-EPIC-3",
+    "title": "Advanced Input & Analysis",
+    "description": "Voice journaling, emotion analysis, spaced repetition — richer data capture and smarter processing.",
+    "status": "planned",
+    "priority": "high",
+    "stories": ["SG-8", "SG-9", "SG-11"]
+  },
+  {
+    "id": "SG-EPIC-4",
+    "title": "Visualization & Insights",
+    "description": "Life balance radar, mood analytics, heatmaps, trend sparklines — make data beautiful and actionable.",
+    "status": "planned",
+    "priority": "medium",
+    "stories": ["SG-12", "SG-13", "SG-14"]
+  },
+  {
+    "id": "SG-EPIC-5",
+    "title": "Quality & DX",
+    "description": "Quality gates, CI hardening, portable hooks, code splitting, developer experience.",
+    "status": "planned",
+    "priority": "high",
+    "stories": ["SG-15", "SG-16", "SG-17"]
+  }
+]
